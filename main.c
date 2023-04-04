@@ -3,7 +3,7 @@
 #include "helpers/vector.h"
 int main()
 {
-    int res = compile_file("./test_c", "./test", 0);
+    int res = compile_file("./test.c", "./test", 0);
     if(res == COMILER_FILE_COMPILED_OK)
     {
         printf("everything compiled fine\n");
