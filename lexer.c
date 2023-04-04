@@ -9,7 +9,7 @@
         buffer_write(buffer, c);\
         nextc();\
     }
-
+struct token* read_next_token();
 static struct lex_process* lex_process;
 static struct token tmp_token;
 
@@ -45,6 +45,22 @@ struct token* token_create(struct token* _token)
     memcpy(&tmp_token, _token, sizeof(struct token));
     tmp_token.pos = lex_file_position();
     return &tmp_token;
+}
+
+static struct token* lexer_last_token()
+{
+    return vector_back_or_null(lex_process->token_vec);
+}
+
+static struct token* handle_whitespace()
+{
+    struct token* last_token = lexer_last_token();
+    if(last_token)
+    {
+        last_token->whitespace = true;
+    }
+    nextc();
+    read_next_token();
 }
 
 const char* read_number_str()
@@ -84,9 +100,14 @@ struct token* read_next_token()
         NUMERIC_CASE:
             token = token_make_number();
         break;
+        case ' ':
+        case '\t':
+            handle_whitespace();
+        break;
         case EOF:
             //we have completed lexical analysis on the file;
         break;
+
 
         default:
             compiler_error(lex_process->compiler, "unexpected token!\n");

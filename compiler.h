@@ -97,8 +97,8 @@ struct lex_process
 
 enum
 {
-    COMILER_FILE_COMPILED_OK,
-    COMPILER_FAILED_WITH_ERRORS 
+    COMILER_FILE_COMPILED_OK = 0,
+    COMPILER_FAILED_WITH_ERRORS = 1 
 };
 
 struct compile_process
