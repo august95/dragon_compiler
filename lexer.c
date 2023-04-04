@@ -2,6 +2,7 @@
 #include <string.h>
 #include "helpers/vector.h"
 #include "helpers/buffer.h"
+#include <ctype.h>
 #include <assert.h>
 
 #define LEX_GETC_IF(buffer, c, exp)     \
@@ -242,6 +243,7 @@ bool lex_is_in_expression()
 {
     return lex_process->current_expression_count > 0;
 }
+
 static struct token *token_make_operator_or_string()
 {
     char op = peekc();
@@ -272,6 +274,29 @@ static struct token* token_make_symbol()
     struct token* token = token_create(&(struct token){.type=TOKEN_TYPE_SYMBOL,.cval=c});
     return token;
 }
+
+static struct token* make_identifier_or_keyword()
+{
+    struct buffer* buffer = buffer_create();
+    char c = 0;
+    LEX_GETC_IF(buffer, c, (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_');
+
+    // null terminator
+    buffer_write(buffer, 0x00);
+
+    return token_create(&(struct token){.type=TOKEN_TYPE_IDENTIFIER,.sval=buffer_ptr(buffer)});
+}
+
+struct token* read_special_token()
+{
+    char c = peekc();
+    if(isalpha(c) || c == '_')
+    {
+        make_identifier_or_keyword();
+    }
+    else NULL;
+}
+
 struct token *read_next_token()
 {
     struct token *token = NULL;
@@ -305,10 +330,13 @@ struct token *read_next_token()
         break;
 
     default:
-        compiler_error(lex_process->compiler, "unexpected token!\n");
+        token = read_special_token();
+        if(!token)
+        {
+            compiler_error(lex_process->compiler, "unexpected token!\n");
+        }
         break;
     }
-
     return token;
 }
 
