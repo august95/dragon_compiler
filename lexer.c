@@ -244,6 +244,41 @@ bool lex_is_in_expression()
     return lex_process->current_expression_count > 0;
 }
 
+bool is_keyword(const char* str)
+{
+    return S_EQ(str, "unsigned") ||
+        S_EQ(str, "signed") ||
+        S_EQ(str, "char") ||
+        S_EQ(str, "short") ||
+        S_EQ(str, "int") ||
+        S_EQ(str, "long") ||
+        S_EQ(str, "double") ||
+        S_EQ(str, "void") ||
+        S_EQ(str, "struct") ||
+        S_EQ(str, "union") ||
+        S_EQ(str, "static") ||
+        S_EQ(str, "__ignore_typecheck") ||
+        S_EQ(str, "return") ||
+        S_EQ(str, "include") ||
+        S_EQ(str, "sizeof") ||
+        S_EQ(str, "if") ||
+        S_EQ(str, "else") ||
+        S_EQ(str, "while") ||
+        S_EQ(str, "for") ||
+        S_EQ(str, "do") ||
+        S_EQ(str, "break") ||
+        S_EQ(str, "continue") ||
+        S_EQ(str, "switch") ||
+        S_EQ(str, "case") ||
+        S_EQ(str, "default") ||
+        S_EQ(str, "goto") ||
+        S_EQ(str, "typedef") ||
+        S_EQ(str, "const") ||
+        S_EQ(str, "extern") ||
+        S_EQ(str, "restrict");
+
+}
+
 static struct token *token_make_operator_or_string()
 {
     char op = peekc();
@@ -284,6 +319,11 @@ static struct token* make_identifier_or_keyword()
     // null terminator
     buffer_write(buffer, 0x00);
 
+    if(is_keyword(buffer_ptr(buffer)))
+    {
+        return token_create(&(struct token){.type=TOKEN_TYPE_KEYWORD, .sval=buffer_ptr(buffer)});
+    }
+
     return token_create(&(struct token){.type=TOKEN_TYPE_IDENTIFIER,.sval=buffer_ptr(buffer)});
 }
 
@@ -295,6 +335,12 @@ struct token* read_special_token()
         make_identifier_or_keyword();
     }
     else NULL;
+}
+
+struct token* token_make_new_line()
+{
+    nextc();
+    return token_create(&(struct token){.type=TOKEN_TYPE_NEWLINE});
 }
 
 struct token *read_next_token()
@@ -314,7 +360,7 @@ struct token *read_next_token()
 
     SYMBOL_CASE:
         token = token_make_symbol();
-    break;
+        break;
 
     case '"':
         token = token_make_string('"', '"');
@@ -323,6 +369,10 @@ struct token *read_next_token()
     case ' ':
     case '\t':
         token = handle_whitespace();
+        break;
+    
+    case '\n':
+        token = token_make_new_line();
         break;
 
     case EOF:
