@@ -102,7 +102,7 @@ struct token* read_next_token()
         break;
         case ' ':
         case '\t':
-            handle_whitespace();
+            token = handle_whitespace();
         break;
         case EOF:
             //we have completed lexical analysis on the file;
@@ -111,7 +111,7 @@ struct token* read_next_token()
 
         default:
             compiler_error(lex_process->compiler, "unexpected token!\n");
-            break;
+        break;
     }
 
     return token;
