@@ -38,7 +38,7 @@ char compile_process_next_char(struct lex_process* lex_process)
         compiler->pos.line +=1;
         compiler->pos.col = 1;
     }
-    return 0;
+    return c;
 }
 
 char compile_process_peak_char(struct lex_process* lex_process)
