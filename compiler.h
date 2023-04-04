@@ -13,6 +13,12 @@ struct pos
 
 enum
 {
+    LEXICAL_ANALYSIS_ALL_OK,
+    LEXICAL_ANALYSIS_INPUT_ERROR
+};
+
+enum
+{
     TOKEN_TYPE_IDENTIFIER,
     TOKEN_TYPE_KEYWORD,
     TOKEN_TYPE_OPERATOR,
@@ -22,6 +28,8 @@ enum
     TOKEN_TYPE_COMMENT,
     TOKEN_TYPE_NEWLINE
 };
+
+
 
 struct token
 {
@@ -43,8 +51,36 @@ struct token
     
     //(5+10) all tokens "5", "+", and "10" points at the firts bracket "8"
     const char* between_brackets;
+    struct  bufer* parantheses_buffer;
+    struct lex_process_functions* function;
 
+    void* private;
+};
 
+struct lex_process;
+typedef char (*LEX_PROCESS_NEXT_CHAR)(struct lex_process* process);
+typedef char (*LEX_PROCESS_PEAK_CHAR)(struct lex_process* process);
+typedef void (*LEX_PROCESS_PUSH_CHAR)(struct lex_process* process, char c);
+
+struct lex_process_functions
+{
+    LEX_PROCESS_NEXT_CHAR next_char;
+    LEX_PROCESS_PEAK_CHAR peak_char;
+    LEX_PROCESS_PUSH_CHAR push_char;
+};
+
+struct lex_process
+{
+    struct pos pos;
+    struct vector* token_vec;
+    struct compile_process* compiler;
+    
+    // how many brackets at the moment
+    int current_expression_count;
+    struct buffer* paranthese_buffer;
+    struct lex_process_functions* function;
+
+    void * private;
 };
 
 enum
@@ -58,6 +94,7 @@ struct compile_process
     // how to compile
     int flags;
 
+    struct pos pos;
     struct compile_process_input_file
     {
         FILE* fp;
@@ -70,6 +107,14 @@ struct compile_process
 int compile_file(const char* filename, const char* out_file, int flags);
 struct compile_process* compile_process_create(const char* filename, const char* filename_out, int flags);
 
+char compile_process_next_char(struct lex_process* lex_process);
+char compile_process_peak_char(struct lex_process* lex_process);
+void compile_process_push_char(struct lex_process* lex_process, char c);
 
+struct lex_process* lex_process_create(struct compile_process* compiler, struct lex_process_functions* functions, void* private);
+void lex_process_free(struct lex_process* process);
+void* lex_process_private(struct lex_process* process);
+void* lex_process_tokens(struct lex_process* process);
+int lex(struct lex_process* process);
 
 #endif /* CCOMPIELR_H*/
