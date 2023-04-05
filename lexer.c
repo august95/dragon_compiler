@@ -368,6 +368,7 @@ struct token *read_next_token()
 
     case ' ':
     case '\t':
+    case '\r':
         token = handle_whitespace();
         break;
     
