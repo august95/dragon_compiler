@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 struct pos
 {
@@ -10,6 +11,9 @@ struct pos
     int col;
     const char* filename;
 };
+
+#define S_EQ(str, str2)\
+    (str && str2 && (strcmp(str, str2) == 0))
 
 #define NUMERIC_CASE \
     case '0':       \
@@ -22,6 +26,35 @@ struct pos
     case '7':       \
     case '8':       \
     case '9'      
+
+#define OPERATOR_CASE_EXCLUDING_DIVISION\
+    case '+':\
+    case '-':\
+    case '*':\
+    case '>':\
+    case '<':\
+    case '^':\
+    case '%':\
+    case '!':\
+    case '=':\
+    case '~':\
+    case '|':\
+    case '&':\
+    case '(':\
+    case '[':\
+    case ',':\
+    case '.':\
+    case '?'
+
+#define SYMBOL_CASE\
+    case '{':\
+    case '}':\
+    case ':':\
+    case ';':\
+    case '#':\
+    case '\\':\
+    case ')':\
+    case ']'
 enum
 {
     LEXICAL_ANALYSIS_ALL_OK,
@@ -38,6 +71,14 @@ enum
     TOKEN_TYPE_STRING,
     TOKEN_TYPE_COMMENT,
     TOKEN_TYPE_NEWLINE
+};
+
+enum
+{
+    NUMBER_TYPE_NORMAL,
+    NUMBER_TYPE_LONG,
+    NUMBER_TYPE_FLOAT,
+    NUMBER_TYPE_DOUBLE
 };
 
 
@@ -57,6 +98,11 @@ struct token
        unsigned long long llnum;
        void* any;
     };
+
+    struct token_number
+     {
+        int type;
+     } num;
 
     // True if their is whitespace betweeen the token and the next token
     bool whitespace;
@@ -113,6 +159,8 @@ struct compile_process
         const char* abs_path;
     } cfile;
 
+    //vector of tokens after lexical analysis
+    struct vector* token_vec;
     FILE* ofile;
 
 };
@@ -131,6 +179,11 @@ void lex_process_free(struct lex_process* process);
 void* lex_process_private(struct lex_process* process);
 void* lex_process_tokens(struct lex_process* process);
 int lex(struct lex_process* process);
+/*
+    builds tokens for the input string
+*/
+struct lex_process* tokens_build_for_string(struct compile_process* compiler, const char * str);
 
+bool token_is_keyword(struct token* token, const char* value);
 
 #endif /* CCOMPIELR_H*/
