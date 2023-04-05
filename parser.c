@@ -44,6 +44,7 @@ void parse_single_token_to_node()
         default:
         compiler_error(current_process , "this is not  single token that can be converted int an node");
     }
+
 }
 
 static struct token* token_peek_next()
@@ -82,7 +83,7 @@ int parse(struct compile_process* process)
     node_set_vector(process->node_vec, process->node_tree_vec);
     vector_set_peek_pointer(process->token_vec, 0);
 
-    while(parse_next == 0)
+    while(parse_next() == 0)
     {
         node = node_peek();
         vector_push(process->node_tree_vec, &node);
