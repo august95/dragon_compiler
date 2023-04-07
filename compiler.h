@@ -92,7 +92,7 @@ struct token
     union 
     {
        char cval;
-       const char* sval;
+       char* sval;
        unsigned int inum;
        unsigned long lnum;
        unsigned long long llnum;
@@ -200,7 +200,13 @@ enum{
     NODE_TYPE_BLANK
 };
 
+enum
+{
+    NODE_FLAG_INSIDE_EXPRESSION = 0x00000001
+};
+
 enum{
+
     PARSE_ALL_OK,
     PARSE_GENERAL_ERROR
 };
@@ -219,6 +225,19 @@ struct node
         //pointer to the function this node is in
         struct node* function;
     } binded;
+
+    union 
+    {
+        struct exp
+        {
+            struct node* left; 
+            struct node* right;
+            const char *op;
+        } exp;
+        
+    };
+
+    
 
     union
     {
@@ -262,6 +281,9 @@ struct node* node_peek_or_null();
 struct node* node_peek();
 struct node* node_pop();
 struct node* node_create(struct node* _node);
+void make_exp_node(struct node* left_node, struct node* right_node, const char * op);
 
+bool node_is_expressioable(struct node* node);
+struct node* node_peek_expressionable_or_null();
 
 #endif /* CCOMPIELR_H*/
