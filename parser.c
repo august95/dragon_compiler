@@ -73,6 +73,7 @@ void parse_single_token_to_node()
 
 static struct token* token_peek_next()
 {
+    //nullptr check?
     struct token * next_token = vector_peek_no_increment(current_process->token_vec);
     parse_ignore_nl_or_commment(next_token);
     return vector_peek_no_increment(current_process->token_vec);
@@ -137,8 +138,9 @@ int parse_expressionable_single(struct history* history)
         parse_exp(history);
         res = 0;
         break;
-
     }
+
+    return res;
 
 }
 
