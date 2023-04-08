@@ -64,9 +64,9 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char *
 struct node* node_create(struct node* _node)
 {
     struct node* node = malloc(sizeof(struct node));
-    memcpy(node, node, sizeof(struct node));
+    memcpy(node, _node, sizeof(struct node));
+    #warning "we should set the bided owner and the binded function here"
     node_push(node);
     return node;
 
-    #warning "we should set the bided owner and the binded function here"
 }
