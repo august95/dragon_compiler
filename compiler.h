@@ -286,4 +286,20 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char *
 bool node_is_expressioable(struct node* node);
 struct node* node_peek_expressionable_or_null();
 
+#define TOTAL_OPERATOR_GROUPS 14
+#define MAX_PERATORS_IN_GROUP 12
+
+enum
+{
+    ASSOSCIATIVITY_LEFT_TO_RIGHT,
+    ASSOSCIATIVITY_RIGHT_TO_LEFT
+};
+
+struct expresssionable_op_precedence_group
+{
+    char* operators[MAX_PERATORS_IN_GROUP];
+    int associtivity;
+};
+
+
 #endif /* CCOMPIELR_H*/
