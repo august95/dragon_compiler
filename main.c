@@ -10,7 +10,7 @@ int main()
     {
         printf("everything compiled fine[%i]\n",res);
     }
-    else if (res == COMPILER_FAILED_WITH_ERRORS);
+    else 
     {
         printf("Unknown response for compile file[%i]\n",res);
     }
