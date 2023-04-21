@@ -29,7 +29,7 @@ void parse_expressionable(struct history* history);
 
 static struct compile_process* current_process;
 static struct token* parser_last_token;
-extern struct expresssionable_op_precedence_group op_precendece[TOTAL_OPERATOR_GROUPS];
+extern struct expresssionable_op_precedence_group op_precedence[TOTAL_OPERATOR_GROUPS];
 
 
 static void parse_ignore_nl_or_commment(struct token* token)
@@ -91,12 +91,12 @@ static int parser_get_precendence_for_operator(const char* op, struct expresssio
     *group_out = NULL;
     for(int i = 0; i< TOTAL_OPERATOR_GROUPS; i++)
     {
-        for(int b = 0; op_precendece[i].operators[b]; i++)
+        for(int b = 0; op_precedence[i].operators[b]; i++)
         {
-            const char * _op = op_precendece[i].operators[b];
+            const char * _op = op_precedence[i].operators[b];
             if(S_EQ(op,_op))
             {
-                *group_out = &op_precendece[i];
+                *group_out = &op_precedence[i];
                 return i;
             }
         }
@@ -130,10 +130,12 @@ void parser_node_shift_children_left(struct node* node)
 
     const char* right_op = node->exp.right->exp.op;
     struct node* new_exp_left_node = node->exp.left;
-    struct node* new_exp_right_node = node->exp.right;
-    make_exp_node(new_exp_left_node, new_exp_right_node, node->exp.right->exp.right);
+    struct node* new_exp_right_node = node->exp.right->exp.left;
+    make_exp_node(new_exp_left_node, new_exp_right_node, node->exp.op);
 
+    // (50*20)
     struct node* new_left_operand = node_pop();
+    // 120
     struct node* new_right_operand = node->exp.right->exp.right;
     node->exp.left = new_left_operand;
     node->exp.right = new_right_operand;
