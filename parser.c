@@ -147,7 +147,7 @@ void parser_node_shift_children_left(struct node* node)
 void parser_reorder_expression(struct node ** node_out)
 {
     struct node* node = *node_out;
-    if(!node->type != NODE_TYPE_EXPRESSION)
+    if(node->type != NODE_TYPE_EXPRESSION)
     {
         return;
     }
