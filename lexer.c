@@ -111,6 +111,7 @@ int lex_number_type(char c)
     {
         res = NUMBER_TYPE_FLOAT;
     }
+    return res;
 }
 
 struct token *token_make_number_for_value(unsigned long number)
