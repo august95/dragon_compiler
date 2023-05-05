@@ -77,6 +77,13 @@ static struct token *token_peek_next()
     return vector_peek_no_increment(current_process->token_vec);
 }
 
+static bool token_next_is_operator(const char* op)
+{
+    struct token* token = token_peek_next();
+    return token_is_operator(token, op);
+}
+
+
 void parse_expressionable_for_op(struct history *history, const char *op)
 {
     parse_expressionable(history);
@@ -278,6 +285,45 @@ int parser_datatype_expected_for_type_string(const char* str)
     }
     return type;
 }
+int parser_get_random_type_index()
+{
+    static int x = 0;
+    x++;
+    return x;
+}
+struct token* parser_build_random_type_name()
+{
+    char tmp_name[25];
+    spirntf(tmp_name,"customtypename %i", parser_get_random_type_index());
+    char* sval = malloc(sizeof(tmp_name));
+    strncpy(sval, tmp_name, sizeof(tmp_name));
+    struct token* token = calloc(1, sizeof(struct token));
+    token->type = TOKEN_TYPE_IDENTIFIER;
+    token->sval = sval;
+    return token;
+}
+
+
+int parser_get_pointer_depth()
+{
+    int depth = 0;
+    while(token_next_is_operator("*"))
+    {
+        depth++;
+        token_next();
+    }
+    return depth;
+}
+
+void parser_datatype_init_type_and_size(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out, int pointer_depth, int expected_type)
+{
+
+}
+
+void parser_datatype_init(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out, int pointer_depth, int expected_type)
+{
+    
+}
 
 void parse_datatype_type(struct datatype* dtype)
 {   
@@ -285,7 +331,23 @@ void parse_datatype_type(struct datatype* dtype)
     struct token* secondary_datatype_token = NULL;
     parser_get_datatype_tokens(&datatype_token, &secondary_datatype_token);
     int expected_type = parser_datatype_expected_for_type_string(datatype_token->sval);
-    
+    if(datatype_is_struct_or_union_for_name(datatype_token->sval))
+    {
+        if(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+        {
+            datatype_token == token_next();
+        }
+        else
+        {
+            //struct has no name
+            datatype_token = parser_build_random_type_name();
+            dtype->flags |= DATATYPE_FLAG_STRUCT_UNION_NO_NAME;
+        }
+    }
+    //int **
+    int pointer_depth = parser_get_pointer_depth();
+
+
 
 }
 

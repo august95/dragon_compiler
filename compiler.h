@@ -256,7 +256,7 @@ enum
     DATATYPE_FLAG_IS_RESTRICT       = 0b00001000000,
     DATATYPE_FLAG_IGNORE_TYPE_CHECKING  = 0b00010000000,
     DATATYPE_FLAG_IS_SECONDARY      = 0b00100000000,
-    DATATYPE_FLAG_IS_UNION_NO_NAME  = 0b01000000000,
+    DATATYPE_FLAG_STRUCT_UNION_NO_NAME  = 0b01000000000,
     DATATYPE_FLAG_IS_LITERAL        = 0b10000000000
 };
 
@@ -335,6 +335,8 @@ bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
+bool datatype_is_struct_or_union_for_name(const char* name);
+bool token_is_operator(struct token* token, const char* val);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
