@@ -274,14 +274,14 @@ void parser_get_datatype_tokens(struct token** datatype_token, struct token** da
 
 int parser_datatype_expected_for_type_string(const char* str)
 {
-    int type = DATATYPE_EXPECT_PRIMITIVE;
+    int type = DATA_TYPE_EXPECT_PRIMITIVE;
     if(S_EQ(str, "union"))
     {
-        type = DATATYPE_EXPECT_UNION;
+        type = DATA_TYPE_EXPECT_UNION;
     }
     else if(S_EQ(str, "union"))
     {
-        type = DATATYPE_EXPECT_STRUCT;
+        type = DATA_TYPE_EXPECT_STRUCT;
     }
     return type;
 }
@@ -323,6 +323,22 @@ bool parser_datatype_is_secondary_allowed(int expected_type)
 bool parser_datatype_is_secondary_allowed_for_type(const char* type)
 {
     return S_EQ(type, "long") || S_EQ(type, "short") || S_EQ(type, "double") || S_EQ(type, "float") ;
+}
+
+void parser_datatype_init_type_and_size_for_primitive(struct datatype* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out);
+
+void parser_datatype_adjust_size_for_seondary(struct datatype* datatype, struct token* datatype_secondary_token)
+{
+    if(!datatype_secondary_token)
+    {
+        return;
+    }
+
+    struct datatype* secondary_data_type = calloc(1, sizeof(datatype));
+    parser_datatype_init_type_and_size_for_primitive(datatype_secondary_token,  NULL,  secondary_data_type);
+    datatype->size += secondary_data_type->size;
+    datatype->secondary = secondary_data_type;
+    datatype->flags |= DATATYPE_FLAG_IS_SECONDARY;
 }
 
 void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out)
@@ -371,6 +387,7 @@ void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_tok
         compiler_error(current_process, "invalid primitive secondary datatype \n");
     }
 
+    parser_datatype_adjust_size_for_seondary(datatype_out, datatype_secondary_token);
 }
 
 void parser_datatype_init_type_and_size(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out, int pointer_depth, int expected_type)
