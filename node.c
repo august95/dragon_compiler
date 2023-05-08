@@ -43,7 +43,7 @@ bool node_is_expressioable(struct node* node)
 {
     return (node->type = NODE_TYPE_EXPRESSION || 
             node->type == NODE_TYPE_EXPRESSION_PARANTHESES || 
-            node->type == NODE_TYPE_IDENTIFIERS || 
+            node->type == NODE_TYPE_IDENTIFIER || 
             node->type == NODE_TYPE_NUMBER ||
             node->type == NODE_TYPE_STRING);
 }
