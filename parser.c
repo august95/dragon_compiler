@@ -516,6 +516,12 @@ void parse_expressionable(struct history *history)
     }
 }
 
+void parse_keyword_for_global()
+{
+    parse_keyword(history_begin(0));
+    struct node* node = node_pop();
+}
+
 int parse_next()
 {
     struct token *token = token_peek_next();
@@ -531,6 +537,10 @@ int parse_next()
     case TOKEN_TYPE_STRING:
         parse_expressionable(history_begin(0));
         break;
+    case TOKEN_TYPE_KEYWORD:
+        parse_keyword_for_global();
+    break;
+
     }
     return 0;
 }
