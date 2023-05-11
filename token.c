@@ -8,15 +8,27 @@ const char* primitive_types[PRIMITIVE_TYPES_TOTAL] = {
 
 bool token_is_keyword(struct token *token, const char *value)
 {
+    if(!token)
+    {
+        return false;
+    }
     return (token->type == TOKEN_TYPE_KEYWORD) && S_EQ(token->sval, value);
 }
 bool token_is_symbol(struct token* token, char c)
 {
+    if(!token)
+    {
+        return false;
+    }
     return token->type == TOKEN_TYPE_SYMBOL && token->cval == c;
 }
 
 bool token_is_operator(struct token* token, const char* val)
 {
+    if(!token)
+    {
+        return false;
+    }
     return token->type == TOKEN_TYPE_OPERATOR && S_EQ(token->sval, val);
 }
 
@@ -28,6 +40,11 @@ bool token_is_nl_or_commet_or_newline_seperator(struct token *token)
 
 bool token_is_primitive_keyword(struct token* token)
 {
+    if(!token)
+    {
+        return false;
+    }
+
     if(token->type != TOKEN_TYPE_KEYWORD)
         return false;
 
