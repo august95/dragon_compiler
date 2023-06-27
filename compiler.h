@@ -145,6 +145,21 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+struct scope
+{
+    int flags;
+
+    //void*
+    struct vector* entities;
+
+    // the total number of bytes this scope uses. Aligned to 16 bytes.
+    size_t size;
+
+    //NULL if no parent.
+    struct scope* parent;
+
+};
+
 struct compile_process
 {
     // how to compile
@@ -164,6 +179,12 @@ struct compile_process
     struct vector *node_tree_vec;
 
     FILE *ofile;
+
+    struct
+    {
+        struct scope* root;
+        struct scope* current;
+    } scope;
 };
 enum
 {
