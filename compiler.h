@@ -304,7 +304,7 @@ enum
     DATA_SIZE_ZERO = 0,
     DATA_SIZE_BYTE = 1,
     DATA_SIZE_WORD = 2,
-    DATA_SIZE_DWORD = 3,
+    DATA_SIZE_DWORD = 4,
     DATA_SIZE_DDWORD = 4
 };
 int compile_file(const char *filename, const char *out_file, int flags);
