@@ -160,6 +160,20 @@ struct scope
 
 };
 
+enum
+{
+    SYMBOL_TYPE_NODE,
+    SYMBOL_TYPE_NATIVE_FUNCTION,
+    SYMBOL_TYPE_UNKNOWN
+};
+
+struct symbol
+{
+    const char* name;
+    int type;
+    void* data;
+};
+
 struct compile_process
 {
     // how to compile
@@ -185,6 +199,15 @@ struct compile_process
         struct scope* root;
         struct scope* current;
     } scope;
+
+    struct 
+    {
+        //current active symbol table.
+        struct vector* table;
+        
+        // struct vctor* multiple symbol tables
+        struct vector* tables;
+    } symbols;
 };
 enum
 {
