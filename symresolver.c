@@ -58,7 +58,7 @@ struct symbol* symresolver_get_symbol_for_native_function(struct compile_process
     return NULL;
 }
 
-struct symobl* symresolver_register_symbol(struct compile_process* process, const char* sym_name, int type, void* data)
+struct symbol* symresolver_register_symbol(struct compile_process* process, const char* sym_name, int type, void* data)
 {
     if(symresolver_get_symbol(process, sym_name)) //no symbols with same name in a scope
     {
