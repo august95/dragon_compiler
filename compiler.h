@@ -253,6 +253,27 @@ enum
     PARSE_ALL_OK,
     PARSE_GENERAL_ERROR
 };
+
+struct node;
+struct datatype
+{
+    int flags;
+    // type of long, int, float
+    int type;
+    // i.e. long int
+    struct datatype *secondary;
+    const char *type_str;
+    // size of the type
+    size_t size;
+    //***p pointer deppth of 3
+    int pointer_depth;
+    union
+    {
+        struct node *struct_node;
+        struct node *union_node;
+    };
+};
+
 struct node
 {
     int type;
@@ -277,6 +298,13 @@ struct node
             struct node *right;
             const char *op;
         } exp;
+
+        struct var
+        {
+            struct datatype type;
+            const char* name;
+            struct node* val;
+        } var;
     };
 
     union
@@ -316,25 +344,6 @@ enum
     DATA_TYPE_STRUCT,
     DATA_TYPE_UNION,
     DATA_TYPE_UNKNOWN
-};
-
-struct datatype
-{
-    int flags;
-    // type of long, int, float
-    int type;
-    // i.e. long int
-    struct datatype *secondary;
-    const char *type_str;
-    // size of the type
-    size_t size;
-    //***p pointer deppth of 3
-    int pointer_depth;
-    union
-    {
-        struct node *struct_node;
-        struct node *union_node;
-    };
 };
 
 enum

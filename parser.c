@@ -476,12 +476,72 @@ void parser_ignore_int(struct datatype* dtype)
     }
 }
 
+void parse_expressionable_root(struct history *history)
+{
+    parse_expressionable(history);
+    struct node* result_node = node_pop();
+    node_push(result_node);
+
+    //TODO: do evaluation of what comes after "=" in: int abc = 10 + 20 + 30;
+}
+
+void make_variable_node(struct datatype* dtype, struct token* name_token, struct node* value_node)
+{
+    const char* name_str = NULL;
+    if(name_token)
+    {
+        name_str = name_token->sval;
+    }
+    node_create(&(struct node){.type=NODE_TYPE_VARIABLE, .var.name=name_str, .var.type=*dtype, .var.val=value_node});
+}
+
+void make_variable_node_and_register(struct history* history, struct datatype* dtype, struct token* name_token, struct node* value_node)
+{
+    make_variable_node(dtype, name_token, value_node);
+    struct node* var_node = node_pop();
+    #warning "remember to calculate the scope offset and push to the scope"
+    //calculate the scope offset
+    //push the variable to the scope
+
+    node_push(var_node);
+}
+
+void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history)
+{
+    struct node* value_node = NULL;
+    //int a; int b[30];
+    //check for array brackets.
+
+    #warning "check for array brackets"
+
+    //int c = 50;
+    if(token_next_is_operator("="))
+    {
+        token_next();
+        parse_expressionable_root(history);
+        value_node = node_pop();
+    }
+
+    make_variable_node_and_register(history, dtype, name_token, value_node);
+}
+
 void parse_variable_function_or_struct_union(struct history *history)
 {
     struct datatype dtype;
     parse_datatype(&dtype);
 
     parser_ignore_int(&dtype);
+
+    //int abc;
+    struct token* name_token = token_next();
+    if(name_token->type != TOKEN_TYPE_IDENTIFIER)
+    {
+        compiler_error(current_process, "missing identifier after datatype!");
+    }
+
+    //check if the identifier is a function decleartion!
+
+    parse_variable( &dtype, name_token, history);
 }
 
 void parse_keyword(struct history *history)
@@ -541,6 +601,8 @@ void parse_keyword_for_global()
 {
     parse_keyword(history_begin(0));
     struct node* node = node_pop();
+
+    node_push(node);
 }
 
 int parse_next()
