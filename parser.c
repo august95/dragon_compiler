@@ -281,7 +281,7 @@ int parser_datatype_expected_for_type_string(const char* str)
     {
         type = DATA_TYPE_EXPECT_UNION;
     }
-    else if(S_EQ(str, "union"))
+    else if(S_EQ(str, "struct"))
     {
         type = DATA_TYPE_EXPECT_STRUCT;
     }
@@ -394,9 +394,9 @@ void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_tok
 
 void parser_datatype_init_type_and_size(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out, int pointer_depth, int expected_type)
 {
-    if(parser_datatype_is_secondary_allowed(expected_type) && datatype_secondary_token)
+    if(!parser_datatype_is_secondary_allowed(expected_type) && datatype_secondary_token)
     {
-        compiler_error(current_process, "toy provided an invalid secondary datatype \n");
+        compiler_error(current_process, "invalid secondary datatype \n");
     }
     switch(expected_type)
     {
@@ -475,6 +475,7 @@ void parser_ignore_int(struct datatype* dtype)
         compiler_error(current_process, "invlid int provided");
     }
 }
+
 void parse_variable_function_or_struct_union(struct history *history)
 {
     struct datatype dtype;
