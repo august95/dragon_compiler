@@ -561,7 +561,7 @@ void parse_variable(struct datatype* dtype, struct token* name_token, struct his
     struct array_brackets* brackets = NULL;
     if(token_next_is_operator("["))
     {
-        parse_array_brackets(history);
+        brackets = parse_array_brackets(history);
         dtype->array.brackets = brackets;
         dtype->array.size = array_brackets_calculate_size(dtype, brackets);
         dtype->flags |= DATATYPE_FLAG_IS_ARRAY;
