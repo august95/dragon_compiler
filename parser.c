@@ -67,7 +67,7 @@ void parse_single_token_to_node()
         break;
 
     default:
-        compiler_error(current_process, "this is not  single token that can be converted int an node");
+        compiler_error(current_process, "this is not single token that can be converted int an node");
     }
 }
 
@@ -572,7 +572,7 @@ int parse_expressionable_single(struct history *history)
         res = 0;
         break;
 
-    case NODE_TYPE_IDENTIFIER:
+    case TOKEN_TYPE_IDENTIFIER:
         parse_identifier(history);
         break;
 
