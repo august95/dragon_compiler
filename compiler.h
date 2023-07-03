@@ -338,7 +338,7 @@ struct node
 
     struct bracket
     {
-        //int x[50]. [50] is the bracket node. Inner is NODE_TYOE_NUMBER with value of 50
+        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
         struct node* inner;
     } bracket;
 
