@@ -342,6 +342,13 @@ struct node
         struct node* inner;
     } bracket;
 
+    struct _struct
+    {
+        const char* name;
+        struct node* body_n;
+        struct node* var;
+    } _struct;
+
 };
 
 enum
