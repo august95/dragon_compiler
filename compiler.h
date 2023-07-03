@@ -255,6 +255,12 @@ enum
     PARSE_GENERAL_ERROR
 };
 
+struct array_brackets
+{
+    //vector of struct node*
+    struct vector* n_brackets;
+};
+
 struct node;
 struct datatype
 {
@@ -273,6 +279,13 @@ struct datatype
         struct node *struct_node;
         struct node *union_node;
     };
+
+    struct array
+    {
+        struct array_brackets* brackets;
+        // total array size= datatype size * each index
+        size_t size;
+    } array;
 };
 
 struct node
@@ -319,8 +332,16 @@ struct node
 
     struct varlist
     {
+        //list of struc tnodeÆ variables
         struct vector* list;
     } var_list;
+
+    struct bracket
+    {
+        //int x[50]. [50] is the bracket node. Inner is NODE_TYOE_NUMBER with value of 50
+        struct node* inner;
+    } bracket;
+
 };
 
 enum
@@ -397,6 +418,7 @@ struct node *node_peek();
 struct node *node_pop();
 struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
+void make_bracket_node(struct node* node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
@@ -404,6 +426,16 @@ bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
 bool datatype_is_struct_or_union_for_name(const char* name);
 bool token_is_operator(struct token* token, const char* val);
+
+
+struct array_brackets* array_brackets_new();
+
+void array_brackets_free(struct array_brackets* brackets);
+void array_brackets_add(struct array_brackets* bracekts, struct node* bracket_node);
+struct vector* array_brackets_node_vector(struct  array_brackets* brackets);
+size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
+size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
+int array_total_indexes(struct datatype* dtype);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
