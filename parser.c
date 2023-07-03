@@ -39,6 +39,7 @@ static void parse_ignore_nl_or_commment(struct token *token)
         token = vector_peek_no_increment(current_process->token_vec);
     }
 }
+
 static struct token *token_next()
 {
     struct token *next_token = vector_peek_no_increment(current_process->token_vec);
@@ -46,6 +47,15 @@ static struct token *token_next()
     current_process->pos = next_token->pos;
     parser_last_token = next_token;
     return vector_peek(current_process->token_vec);
+}
+
+static void expect_sym(char c)
+{
+    struct token* next_token= token_next();
+    if(!next_token || next_token->type != TOKEN_TYPE_SYMBOL || next_token->cval != c)
+    {
+        compiler_error(current_process, "expecting symbol %c", c );
+    }
 }
 
 void parse_single_token_to_node()
@@ -506,6 +516,11 @@ void make_variable_node_and_register(struct history* history, struct datatype* d
     node_push(var_node);
 }
 
+void make_variable_list_node(struct vector* var_list_vec)
+{
+    node_create(&(struct node){.type=NODE_TYPE_VARIABLE_LIST,.var_list.list=var_list_vec});
+}
+
 void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history)
 {
     struct node* value_node = NULL;
@@ -541,7 +556,27 @@ void parse_variable_function_or_struct_union(struct history *history)
 
     //check if the identifier is a function decleartion!
 
-    parse_variable( &dtype, name_token, history);
+    parse_variable( &dtype, name_token, history); //we have variable node, with or without a value node!
+
+    if(token_is_operator(token_peek_next(), ",")) //ex: int a,b,c = 30;
+    {
+        struct vector* var_list = vector_create(sizeof(struct node*));
+        //pop of fthe original variable
+        struct node* var_node = node_pop();
+        vector_push(var_list, &var_node);
+        while(token_is_operator(token_peek_next(), ","))
+        {
+            // Getting rid of the comma
+            token_next();
+            name_token = token_next();
+            parse_variable(&dtype, name_token, history);
+            var_node = node_pop();
+            vector_push(var_list, &var_node);
+        }
+        make_variable_list_node(var_list);
+    }
+
+    expect_sym(';');
 }
 
 void parse_keyword(struct history *history)

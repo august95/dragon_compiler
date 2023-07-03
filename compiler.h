@@ -217,6 +217,7 @@ enum
     NODE_TYPE_IDENTIFIER,
     NODE_TYPE_STRING,
     NODE_TYPE_VARIABLE,
+    NODE_TYPE_VARIABLE_LIST,
     NODE_TYPE_LIST,
     NODE_TYPE_FUNCTION,
     NODE_TYPE_BODY,
@@ -315,6 +316,11 @@ struct node
         unsigned long lnum;
         unsigned long long llnum;
     };
+
+    struct varlist
+    {
+        struct vector* list;
+    } var_list;
 };
 
 enum
