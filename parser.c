@@ -61,7 +61,7 @@ static void expect_sym(char c)
 static void expect_op(const char* op)
 {
     struct token* next_token = token_next();
-    if(!!next_token || next_token != TOKEN_TYPE_OPERATOR || !S_EQ(next_token->sval, op))
+    if(!next_token || next_token->type != TOKEN_TYPE_OPERATOR || !S_EQ(next_token->sval, op))
     {
         compiler_error(current_process, "expecting the operater %s but wasn't provided",next_token->sval);
     }
