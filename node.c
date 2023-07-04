@@ -4,6 +4,7 @@
 
 struct vector * node_vector = NULL;
 struct vector * node_vector_root = NULL;
+struct node* parser_current_body = NULL;
 
 void node_set_vector(struct vector* vec, struct vector* root_vec)
 {
@@ -59,6 +60,15 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char *
     assert(left_node);
     assert(right_node);
     node_create(&(struct node){.type=NODE_TYPE_EXPRESSION, .exp.left=left_node, .exp.right = right_node, .exp.op=op});
+}
+void make_bracket_node(struct node* node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_BRACKET, .bracket.inner=node });
+}
+
+void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_BODY,.body.statements=body_vec,.body.size=size, .body.padded=padded,.body.larges_var_node=largest_var_node});
 }
 
 struct node* node_create(struct node* _node)

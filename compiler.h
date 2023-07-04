@@ -145,6 +145,35 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+struct scope
+{
+    int flags;
+
+    //void*
+    struct vector* entities;
+
+    // the total number of bytes this scope uses. Aligned to 16 bytes.
+    size_t size;
+
+    //NULL if no parent.
+    struct scope* parent;
+
+};
+
+enum
+{
+    SYMBOL_TYPE_NODE,
+    SYMBOL_TYPE_NATIVE_FUNCTION,
+    SYMBOL_TYPE_UNKNOWN
+};
+
+struct symbol
+{
+    const char* name;
+    int type;
+    void* data;
+};
+
 struct compile_process
 {
     // how to compile
@@ -164,6 +193,21 @@ struct compile_process
     struct vector *node_tree_vec;
 
     FILE *ofile;
+
+    struct
+    {
+        struct scope* root;
+        struct scope* current;
+    } scope;
+
+    struct 
+    {
+        //current active symbol table.
+        struct vector* table;
+        
+        // struct vctor* multiple symbol tables
+        struct vector* tables;
+    } symbols;
 };
 enum
 {
@@ -173,6 +217,7 @@ enum
     NODE_TYPE_IDENTIFIER,
     NODE_TYPE_STRING,
     NODE_TYPE_VARIABLE,
+    NODE_TYPE_VARIABLE_LIST,
     NODE_TYPE_LIST,
     NODE_TYPE_FUNCTION,
     NODE_TYPE_BODY,
@@ -209,6 +254,40 @@ enum
     PARSE_ALL_OK,
     PARSE_GENERAL_ERROR
 };
+
+struct array_brackets
+{
+    //vector of struct node*
+    struct vector* n_brackets;
+};
+
+struct node;
+struct datatype
+{
+    int flags;
+    // type of long, int, float
+    int type;
+    // i.e. long int
+    struct datatype *secondary;
+    const char *type_str;
+    // size of the type
+    size_t size;
+    //***p pointer deppth of 3
+    int pointer_depth;
+    union
+    {
+        struct node *struct_node;
+        struct node *union_node;
+    };
+
+    struct array
+    {
+        struct array_brackets* brackets;
+        // total array size= datatype size * each index
+        size_t size;
+    } array;
+};
+
 struct node
 {
     int type;
@@ -233,6 +312,13 @@ struct node
             struct node *right;
             const char *op;
         } exp;
+
+        struct var
+        {
+            struct datatype type;
+            const char* name;
+            struct node* val;
+        } var;
     };
 
     union
@@ -243,6 +329,41 @@ struct node
         unsigned long lnum;
         unsigned long long llnum;
     };
+
+    struct varlist
+    {
+        //list of struct node variables
+        struct vector* list;
+    } var_list;
+
+    struct bracket
+    {
+        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
+        struct node* inner;
+    } bracket;
+
+    struct _struct
+    {
+        const char* name;
+        struct node* body_n;
+        struct node* var;
+    } _struct;
+
+    struct body
+    {
+        struct vector* statements;
+
+         // size of all statements
+        size_t size;
+        
+        //true if the variable size has been increased because of padding
+        bool padded;
+
+        //ptr to the larges variable node in the statements vector
+        struct node* larges_var_node;
+
+    } body;
+
 };
 
 enum
@@ -274,25 +395,6 @@ enum
     DATA_TYPE_UNKNOWN
 };
 
-struct datatype
-{
-    int flags;
-    // type of long, int, float
-    int type;
-    // i.e. long int
-    struct datatype *secondary;
-    const char *type_str;
-    // size of the type
-    size_t size;
-    //***p pointer deppth of 3
-    int pointer_depth;
-    union
-    {
-        struct node *struct_node;
-        struct node *union_node;
-    };
-};
-
 enum
 {
     DATA_TYPE_EXPECT_PRIMITIVE,
@@ -304,7 +406,7 @@ enum
     DATA_SIZE_ZERO = 0,
     DATA_SIZE_BYTE = 1,
     DATA_SIZE_WORD = 2,
-    DATA_SIZE_DWORD = 3,
+    DATA_SIZE_DWORD = 4,
     DATA_SIZE_DDWORD = 4
 };
 int compile_file(const char *filename, const char *out_file, int flags);
@@ -338,6 +440,8 @@ struct node *node_peek();
 struct node *node_pop();
 struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
+void make_bracket_node(struct node* node);
+void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
@@ -345,6 +449,33 @@ bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
 bool datatype_is_struct_or_union_for_name(const char* name);
 bool token_is_operator(struct token* token, const char* val);
+
+
+struct array_brackets* array_brackets_new();
+
+void array_brackets_free(struct array_brackets* brackets);
+void array_brackets_add(struct array_brackets* bracekts, struct node* bracket_node);
+struct vector* array_brackets_node_vector(struct  array_brackets* brackets);
+size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
+size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
+int array_total_indexes(struct datatype* dtype);
+bool datatype_is_struct_or_union(struct datatype* dtype);
+
+
+struct scope* scope_alloc();
+void scope_dealloc(struct scope* scope);
+struct scope* scope_create_root(struct compile_process* process);
+void scope_free_root(struct compile_process* process);
+struct scope* scope_new(struct compile_process* process, int flags);
+void scope_iteration_start(struct scope* scope);
+void* scope_iteration_back(struct scope* scope);
+void* scope_last_entity_at_scope(struct scope* scope);
+void* scope_last_entity_from_scope_stop_at(struct scope* scope, struct scope* stop_scope);
+void* scope_last_entity_stop_at(struct compile_process* processs, struct scope* stop_scope);
+void* scope_last_entity(struct compile_process* process);
+void scope_push(struct compile_process* process, void*ptr, size_t elem_size);
+void scope_finish(struct compile_process* process);
+struct scope* scope_current(struct compile_process* process);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
