@@ -450,6 +450,12 @@ bool token_is_primitive_keyword(struct token* token);
 bool datatype_is_struct_or_union_for_name(const char* name);
 bool token_is_operator(struct token* token, const char* val);
 
+bool datatype_is_struct_or_union(struct datatype* dtype);
+bool datatype_is_struct_or_union_for_name(const char* name);
+size_t datatype_size_for_array_access(struct datatype* dtype);
+size_t datatype_element_size(struct datatype* dtype);
+size_t datatype_size_no_ptr(struct datatype* dtype);
+size_t datatype_size(struct datatype* dtype);
 
 struct array_brackets* array_brackets_new();
 
@@ -460,6 +466,11 @@ size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct ar
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
 bool datatype_is_struct_or_union(struct datatype* dtype);
+
+//get the variable size for the given node
+size_t variable_size(struct node* var_node);
+//sums the variable size from the given variable list node
+size_t variable_size_for_list(struct node* var_list_node);
 
 
 struct scope* scope_alloc();
