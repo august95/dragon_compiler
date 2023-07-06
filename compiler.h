@@ -446,6 +446,8 @@ void make_body_node(struct vector* body_vec, size_t size, bool padded, struct no
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
+bool node_is_struct_or_union_variable(struct node* node);
+
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
 bool datatype_is_struct_or_union_for_name(const char* name);
@@ -472,6 +474,7 @@ bool datatype_is_struct_or_union(struct datatype* dtype);
 size_t variable_size(struct node* var_node);
 //sums the variable size from the given variable list node
 size_t variable_size_for_list(struct node* var_list_node);
+struct node* variable_struct_or_union_body_node(struct node *node);
 
 
 int padding(int val ,int to);

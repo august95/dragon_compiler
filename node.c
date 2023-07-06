@@ -78,5 +78,13 @@ struct node* node_create(struct node* _node)
     #warning "we should set the bided owner and the binded function here"
     node_push(node);
     return node;
+}
 
+bool node_is_struct_or_union_variable(struct node* node)
+{
+    if(node->type != NODE_TYPE_VARIABLE)
+    {
+        return false;
+    }
+    return datatype_is_struct_or_union(&node->var.type);
 }
