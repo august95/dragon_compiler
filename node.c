@@ -78,5 +78,50 @@ struct node* node_create(struct node* _node)
     #warning "we should set the bided owner and the binded function here"
     node_push(node);
     return node;
+}
 
+bool node_is_struct_or_union_variable(struct node* node)
+{
+    if(node->type != NODE_TYPE_VARIABLE)
+    {
+        return false;
+    }
+    return datatype_is_struct_or_union(&node->var.type);
+}
+
+struct node* variable_node(struct node*node)
+{
+    struct node* var_node = NULL;
+    switch(node->type)
+    {
+        case NODE_TYPE_VARIABLE:
+            var_node = node;
+        break;
+
+        case NODE_TYPE_STRUCT:
+            var_node = node->_struct.var;
+        break;
+
+        case NODE_TYPE_UNION:
+            //var_node = node->_union.var;
+            #warning "union are not yet supported!"
+        break;
+
+    }
+    return var_node;
+}
+
+bool variable_node_is_primitive(struct node* node)
+{
+    assert(node->type == NODE_TYPE_VARIABLE);
+    return datatype_is_primitive(&node->var.type);
+}
+
+struct node* variable_node_or_list(struct node* node)
+{
+    if(node->type == NODE_TYPE_VARIABLE_LIST)
+    {
+        return node;
+    }
+    return variable_node(node);
 }
