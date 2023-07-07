@@ -330,12 +330,14 @@ int parser_datatype_expected_for_type_string(const char* str)
     }
     return type;
 }
+
 int parser_get_random_type_index()
 {
     static int x = 0;
     x++;
     return x;
 }
+
 struct token* parser_build_random_type_name()
 {
     char tmp_name[25];
