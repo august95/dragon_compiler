@@ -318,6 +318,8 @@ struct node
             struct datatype type;
             int padding;
             const char* name;
+            //alligned offset
+            int aoffset;
             struct node* val;
         } var;
     };
@@ -443,10 +445,10 @@ struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
 void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
-
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool node_is_struct_or_union_variable(struct node* node);
+bool variable_node_is_primitive(struct node* node);
 
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
@@ -459,7 +461,7 @@ size_t datatype_size_for_array_access(struct datatype* dtype);
 size_t datatype_element_size(struct datatype* dtype);
 size_t datatype_size_no_ptr(struct datatype* dtype);
 size_t datatype_size(struct datatype* dtype);
-
+bool datatype_is_primitive(struct datatype* dtype);
 struct array_brackets* array_brackets_new();
 
 void array_brackets_free(struct array_brackets* brackets);
@@ -475,6 +477,7 @@ size_t variable_size(struct node* var_node);
 //sums the variable size from the given variable list node
 size_t variable_size_for_list(struct node* var_list_node);
 struct node* variable_struct_or_union_body_node(struct node *node);
+struct node* variable_node(struct node*node);
 
 
 int padding(int val ,int to);
