@@ -67,7 +67,8 @@ struct parser_scope_entity* parser_scope_last_entity_stop_global_scope()
 enum 
 {
     HISTORY_FLAG_INSIDE_UNION    = 0b00000001,
-    HISTORY_FLAG_IS_UPWARD_STACK = 0b00000010
+    HISTORY_FLAG_IS_UPWARD_STACK = 0b00000010,
+    HISTORY_FLAG_IS_GLOBAL_SCOPE = 0b00000100
 };
 
 void parser_scope_new()
@@ -578,7 +579,7 @@ void make_variable_node(struct datatype* dtype, struct token* name_token, struct
 
 void parser_scope_offset_for_stack(struct node* node, struct history* history)
 {
-    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope();
+    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
     bool upward_stack = history->flags & HISTORY_FLAG_IS_UPWARD_STACK;
     int offset = -variable_size(node);
     if(upward_stack)
@@ -596,11 +597,20 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
     }
 }
 
-void parser_scope_offset(struct node* node, struct history* history)
+int parser_scope_offset_for_global(struct node* node, struct history* history)
 {
-    parser_scope_offset_for_stack(node, history);
+    return 0;
 }
 
+void parser_scope_offset(struct node* node, struct history* history)
+{   
+    if(history->flags & HISTORY_FLAG_IS_GLOBAL_SCOPE)
+    {
+        parser_scope_offset_for_global(node, history);
+        return;
+    }
+    parser_scope_offset_for_stack(node, history);
+}
 
 void make_variable_node_and_register(struct history* history, struct datatype* dtype, struct token* name_token, struct node* value_node)
 {
