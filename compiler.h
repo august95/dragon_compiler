@@ -478,6 +478,7 @@ size_t variable_size(struct node* var_node);
 size_t variable_size_for_list(struct node* var_list_node);
 struct node* variable_struct_or_union_body_node(struct node *node);
 struct node* variable_node(struct node*node);
+struct node* variable_node_or_list(struct node* node);
 
 
 int padding(int val ,int to);

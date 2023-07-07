@@ -832,6 +832,55 @@ void parse_body_single_statement(size_t* variable_size, struct vector* body_vec,
     node_push(body_node);
 }
 
+void parse_body_multiple_statements(size_t* variable_size, struct vector* body_vec, struct history* history)
+{
+    //create a blank body node
+    make_body_node(NULL, 0, false, NULL);
+    struct node* body_node = node_pop();
+    body_node->binded.owner = parser_current_body;
+    parser_current_body = body_node;
+
+    struct node* stmt_node = NULL;
+    struct node* largest_possible_var_node = NULL;
+    struct node*  largest_align_eligible_var_node = NULL;
+
+    //we have a body '{}', therfore pop the '{' 
+    expect_sym('{');
+
+    while(!token_next_is_symbol('}'))
+    {
+        parse_statement(history_down(history, history->flags));
+        stmt_node = node_pop();
+        if(stmt_node->type == NODE_TYPE_VARIABLE)
+        {
+            if(!largest_possible_var_node || largest_possible_var_node->var.type.size <= stmt_node->var.type.size)
+            {
+                largest_possible_var_node = stmt_node;
+            }
+
+            if(variable_node_is_primitive(stmt_node))
+            {
+
+                if(!largest_align_eligible_var_node || largest_align_eligible_var_node->var.type.size <= stmt_node->var.type.size)
+                {
+                    largest_align_eligible_var_node = stmt_node;
+                }
+            }
+        }
+        vector_push(body_vec, &stmt_node);
+        
+        //change the variable size if this statment is a variable, and its needed
+        parser_append_size_for_node(history, variable_size, variable_node_or_list(stmt_node));
+    }
+    expect_sym('}');
+
+    parser_finalize_body(history, body_node, body_vec, variable_size, largest_align_eligible_var_node, largest_possible_var_node);
+
+    parser_current_body = body_node->binded.owner;
+
+    node_push(body_node);
+}
+
 /*
 * @brief
 *
@@ -839,6 +888,7 @@ void parse_body_single_statement(size_t* variable_size, struct vector* body_vec,
 * @history
 *
 */
+
 void parse_body(size_t* variable_size, struct history* history)
 {
     parser_scope_new();
@@ -859,9 +909,12 @@ void parse_body(size_t* variable_size, struct history* history)
         parser_scope_finish();
         return;
     }
-
-
+    
+    //parse the a body between "{}"
+    parse_body_multiple_statements(variable_size, body_vec, history);
     parser_scope_finish();
+
+    #warning "Function stack size needs to be adjusted!"
 }
 
 void parse_struct_no_new_scope(struct datatype* dtype)
