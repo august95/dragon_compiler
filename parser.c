@@ -84,12 +84,12 @@ void parser_scope_finish()
 
 struct parser_scope_entity* parser_scope_last_entity()
 {
-    return scope_last_entity(current_process, 0);
+    return scope_last_entity(current_process);
 }
 
-void parser_scope_push(struct node* node, size_t size)
+void parser_scope_push(struct parser_scope_entity* entity, size_t size)
 {
-    scope_push(current_process, node, size);
+    scope_push(current_process, entity, size);
 }
 
 static void parse_ignore_nl_or_commment(struct token *token)
@@ -605,7 +605,7 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
 
 void parser_scope_offset_for_global(struct node* node, struct history* history)
 {
-    return 0;
+    return;
 }
 
 void parser_scope_offset_for_structure(struct node* node, struct history* history)
@@ -647,6 +647,7 @@ void make_variable_node_and_register(struct history* history, struct datatype* d
     //calculate the scope offset
     parser_scope_offset(var_node, history);
     //push the variable to the scope
+    parser_scope_push(parser_new_scope_entity(var_node, var_node->var.aoffset, 0), var_node->var.type.size);
 
     node_push(var_node);
 }
