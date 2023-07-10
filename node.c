@@ -61,6 +61,7 @@ void make_exp_node(struct node* left_node, struct node* right_node, const char *
     assert(right_node);
     node_create(&(struct node){.type=NODE_TYPE_EXPRESSION, .exp.left=left_node, .exp.right = right_node, .exp.op=op});
 }
+
 void make_bracket_node(struct node* node)
 {
     node_create(&(struct node){.type=NODE_TYPE_BRACKET, .bracket.inner=node });
@@ -69,6 +70,16 @@ void make_bracket_node(struct node* node)
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node)
 {
     node_create(&(struct node){.type=NODE_TYPE_BODY,.body.statements=body_vec,.body.size=size, .body.padded=padded,.body.larges_var_node=largest_var_node});
+}
+
+void make_struct_node(const char * name, struct node* body_node)
+{
+    int flags = 0;
+    if(!body_node)  
+    {
+        flags |= NODE_FLAG_IS_FORWARD_DECLARATION;
+    }
+    node_create(&(struct node){.type=NODE_TYPE_STRUCT, ._struct.body_n=body_node->_struct.body_n, ._struct.name=name, .flags=flags});
 }
 
 struct node* node_create(struct node* _node)
@@ -125,3 +136,4 @@ struct node* variable_node_or_list(struct node* node)
     }
     return variable_node(node);
 }
+
