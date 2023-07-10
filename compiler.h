@@ -322,8 +322,43 @@ struct node
             int aoffset;
             struct node* val;
         } var;
-    };
 
+
+
+        struct varlist
+        {
+            //list of struct node variables
+            struct vector* list;
+        } var_list;
+
+        struct bracket
+        {
+        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
+        struct node* inner;
+        } bracket;
+
+        struct _struct
+        {
+            const char* name;
+            struct node* body_n;
+            struct node* var;
+        } _struct;
+
+        struct body
+        {
+            struct vector* statements;
+
+             // size of all statements
+            size_t size;
+        
+            //true if the variable size has been increased because of padding
+            bool padded;
+
+            //ptr to the larges variable node in the statements vector
+            struct node* larges_var_node;
+
+        } body;
+    };
     union
     {
         char cval;
@@ -332,40 +367,6 @@ struct node
         unsigned long lnum;
         unsigned long long llnum;
     };
-
-    struct varlist
-    {
-        //list of struct node variables
-        struct vector* list;
-    } var_list;
-
-    struct bracket
-    {
-        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
-        struct node* inner;
-    } bracket;
-
-    struct _struct
-    {
-        const char* name;
-        struct node* body_n;
-        struct node* var;
-    } _struct;
-
-    struct body
-    {
-        struct vector* statements;
-
-         // size of all statements
-        size_t size;
-        
-        //true if the variable size has been increased because of padding
-        bool padded;
-
-        //ptr to the larges variable node in the statements vector
-        struct node* larges_var_node;
-
-    } body;
 
 };
 
