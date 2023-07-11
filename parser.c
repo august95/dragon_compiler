@@ -533,13 +533,13 @@ void parse_datatype_type(struct datatype* dtype)
 {   
     struct token* datatype_token = NULL;
     struct token* secondary_datatype_token = NULL;
-    parser_get_datatype_tokens(&datatype_token, &secondary_datatype_token);
+    parser_get_datatype_tokens(&datatype_token, &secondary_datatype_token); //pops keyword, eg struct
     int expected_type = parser_datatype_expected_for_type_string(datatype_token->sval);
     if(datatype_is_struct_or_union_for_name(datatype_token->sval))
     {
         if(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
         {
-            datatype_token == token_next();
+            datatype_token = token_next(); //datatype is now equal to the identifier token, which just was popped of
         }
         else
         {
@@ -974,7 +974,7 @@ void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declarati
         make_variable_node_and_register(history_begin(0), dtype, var_name, NULL);
         struct_node->_struct.var = node_pop();
     }
-    expect_sym('}');
+    expect_sym(';');
     node_push(struct_node);
 }
 
