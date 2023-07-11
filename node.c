@@ -103,7 +103,16 @@ struct node* node_from_symbol(struct compile_process* current_process, const cha
 
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name)
 {
-
+    struct node* node = node_from_symbol(current_process, name);
+    if(!node)
+    {
+        return NULL;
+    }
+    if(node->type != NODE_TYPE_STRUCT)
+    {
+        return NULL;
+    }
+    return node;
 }
 
 struct node* node_create(struct node* _node)
