@@ -648,7 +648,7 @@ void parser_scope_offset(struct node* node, struct history* history)
         return;
     }
 
-        if(history->flags & HISTORY_FLAG_INSIDE_STRUCTURE)
+    if(history->flags & HISTORY_FLAG_INSIDE_STRUCTURE)
     {
         parser_scope_offset_for_structure(node, history);
         return;
