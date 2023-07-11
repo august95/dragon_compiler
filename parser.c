@@ -960,7 +960,7 @@ void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declarati
         dtype->size= body_node->body.size;
     }
 
-    if(token_peek_next()->type = TOKEN_TYPE_IDENTIFIER)
+    if(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
     {
         struct token* var_name = token_next();
         struct_node->flags != NODE_FLAG_HAS_VARIABLE_COMBINED;
