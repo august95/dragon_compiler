@@ -549,7 +549,7 @@ void symresolver_initialize(struct compile_process* process);
 void symresolver_new_table(struct compile_process* process);
 void symresolver_end_table(struct compile_process* process);
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
-
+size_t function_node_argument_stack_addition(struct node* node);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12

@@ -28,6 +28,7 @@ int parse_expressionable_single(struct history *history);
 void parse_expressionable(struct history *history);
 void parse_body(size_t* variable_size, struct history* history);
 void parse_keyword(struct history *history);
+void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history);
 struct vector* parser_function_arguments(struct history* history);
 
 static struct compile_process *current_process;
@@ -305,7 +306,7 @@ int parse_exp(struct history *history)
 
 void parse_identifier(struct history *history)
 {
-    assert(token_peek_next()->type == NODE_TYPE_IDENTIFIER);
+    assert(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER);
     parse_single_token_to_node();
 }
 static bool is_keyword_variable_modifier(const char *val)
@@ -615,6 +616,12 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
     int offset = -variable_size(node);
     if(upward_stack)
     {
+        size_t stack_addition = function_node_argument_stack_addition(parser_current_function);
+        offset = stack_addition;
+        if(last_entity)
+        {
+            offset = datatype_size(&variable_node(last_entity->node)->var.type);
+        }
         #warning "Handle Upward Stack!"
         compiler_error(current_process, "Upward stack not implemented!!");
     }
@@ -825,7 +832,7 @@ void parse_variable_full(struct history* history)
         name_token = token_next();
     }
 
-    parser_variable(&dtype, name_token, history);
+    parse_variable(&dtype, name_token, history);
 }
 
 struct vector* parser_function_arguments(struct history* history)
