@@ -360,6 +360,31 @@ struct node
             struct node* larges_var_node;
 
         } body;
+
+        struct function
+        {
+            int flags;
+            //return type
+            struct datatype rtype;
+
+            //function name
+            const char* name;
+
+            struct function_arguments
+            {
+                //vector of functions parameters, must be type NODE_TYPE_VARIABLE
+                struct vector* vector;
+
+                //how much to add to EBP to find the first arguemt
+                size_t stack_addition;
+            } args;
+            //prointer to the function body node, NULL if this is a prototype
+            struct node* body_n;
+
+            //stack size for all variables inside the function
+            size_t stack_size;
+
+        } func;
     };
     union
     {
@@ -415,6 +440,12 @@ enum
     DATA_SIZE_DWORD = 4,
     DATA_SIZE_DDWORD = 4
 };
+
+enum
+{
+    FUNCTION_NODE_FLAG_IS_NATIVE = 0b00000001
+};
+
 int compile_file(const char *filename, const char *out_file, int flags);
 struct compile_process *compile_process_create(const char *filename, const char *filename_out, int flags);
 
