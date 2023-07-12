@@ -79,7 +79,7 @@ void make_struct_node(const char * name, struct node* body_node)
     {
         flags |= NODE_FLAG_IS_FORWARD_DECLARATION;
     }
-    node_create(&(struct node){.type=NODE_TYPE_STRUCT, ._struct.body_n=body_node->_struct.body_n, ._struct.name=name, .flags=flags});
+    node_create(&(struct node){.type=NODE_TYPE_STRUCT, ._struct.body_n=body_node, ._struct.name=name, .flags=flags});
 }
 
 struct node* node_from_sym(struct symbol* sym)
