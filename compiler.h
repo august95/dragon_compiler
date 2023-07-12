@@ -438,7 +438,7 @@ enum
     DATA_SIZE_BYTE = 1,
     DATA_SIZE_WORD = 2,
     DATA_SIZE_DWORD = 4,
-    DATA_SIZE_DDWORD = 4
+    DATA_SIZE_DDWORD = 8
 };
 
 enum
@@ -481,6 +481,8 @@ void make_exp_node(struct node *left_node, struct node *right_node, const char *
 void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char * name, struct node* body_node);
+void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
+
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool node_is_struct_or_union_variable(struct node* node);
@@ -546,6 +548,7 @@ struct symbol* symresolver_get_symbol(struct compile_process* process, const cha
 void symresolver_initialize(struct compile_process* process);
 void symresolver_new_table(struct compile_process* process);
 void symresolver_end_table(struct compile_process* process);
+struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
 
 
 #define TOTAL_OPERATOR_GROUPS 14
