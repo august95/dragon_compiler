@@ -619,19 +619,23 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
     {
         size_t stack_addition = function_node_argument_stack_addition(parser_current_function);
         offset = stack_addition;
-        if(last_entity)
+        if(last_entity) //last entity? set offset to the last variable size
         {
+            //on each iteration, the prev datatype_size will equal the siza of ALL prvious var sizes!
             offset = datatype_size(&variable_node(last_entity->node)->var.type);
         }
     }
     if(last_entity)
     {
-        offset += variable_node(last_entity->node)->var.aoffset;
+        offset += variable_node(last_entity->node)->var.aoffset; //this offset var size, plus total offset of last entry!!!
         if(variable_node_is_primitive(node))
         {
             variable_node(node)->var.padding = padding(upward_stack? offset: -offset, node->var.type.size);
         }
     }
+
+    //FIXME: according to github repo PeachCompiler, aoffset is added to the node here, with the total size of this alignment, and the alignment for the previous variables in the scope
+    //The line 630, will increamentally increase tha aoffset for all variables on the stack!
 }
 
 void parser_scope_offset_for_global(struct node* node, struct history* history)
