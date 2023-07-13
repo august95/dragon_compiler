@@ -325,8 +325,6 @@ struct node
             struct node* val;
         } var;
 
-
-
         struct varlist
         {
             //list of struct node variables
@@ -342,8 +340,8 @@ struct node
         struct _struct
         {
             const char* name;
-            struct node* body_n;
-            struct node* var;
+            struct node* body_n; //the body {}
+            struct node* var;   // single instantiation, null ptr if {body};
         } _struct;
 
         struct body
