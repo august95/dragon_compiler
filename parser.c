@@ -611,7 +611,8 @@ void make_variable_node(struct datatype* dtype, struct token* name_token, struct
 
 void parser_scope_offset_for_stack(struct node* node, struct history* history)
 {
-    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
+    //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
+    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); 
     bool upward_stack = history->flags & HISTORY_FLAG_IS_UPWARD_STACK;
     int offset = -variable_size(node);
     if(upward_stack)
@@ -622,8 +623,6 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
         {
             offset = datatype_size(&variable_node(last_entity->node)->var.type);
         }
-        #warning "Handle Upward Stack!"
-        compiler_error(current_process, "Upward stack not implemented!!");
     }
     if(last_entity)
     {
