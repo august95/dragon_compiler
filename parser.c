@@ -516,6 +516,8 @@ void parser_datatype_init_type_and_size(struct token* datatype_token, struct tok
         case DATA_TYPE_EXPECT_STRUCT:
             datatype_out->type = DATA_TYPE_STRUCT;
             datatype_out->size = size_of_struct(datatype_token->sval);
+            //hell yeah!! get the struct node from the symresolver based on the name, and add a pointer to it in the datatype
+            //now all variables of that type, has a pointer to the struct node!
             datatype_out->struct_node = struct_node_for_name(current_process, datatype_token->sval);
         break;
         case DATA_TYPE_EXPECT_UNION:
