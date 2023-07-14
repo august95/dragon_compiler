@@ -1,1 +1,4 @@
-int x,a,b = 50;
+{
+    int a;
+    int b;
+}

@@ -26,11 +26,16 @@ struct history *history_down(struct history *history, int flags)
 
 int parse_expressionable_single(struct history *history);
 void parse_expressionable(struct history *history);
+void parse_body(size_t* variable_size, struct history* history);
+void parse_keyword(struct history *history);
+void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history);
+struct vector* parser_function_arguments(struct history* history);
 
 static struct compile_process *current_process;
 static struct token *parser_last_token;
 extern struct expresssionable_op_precedence_group op_precedence[TOTAL_OPERATOR_GROUPS];
 extern struct node* parser_current_body;
+extern struct node* parser_current_function;
 
 enum
 {
@@ -69,7 +74,8 @@ enum
     HISTORY_FLAG_INSIDE_UNION     = 0b00000001,
     HISTORY_FLAG_IS_UPWARD_STACK  = 0b00000010,
     HISTORY_FLAG_IS_GLOBAL_SCOPE  = 0b00000100,
-    HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000
+    HISTORY_FLAG_INSIDE_STRUCTURE = 0b00001000,
+    HISTORY_FLAG_INSIDE_FUNCTION =  0b00010000
 };
 
 void parser_scope_new()
@@ -105,7 +111,10 @@ static struct token *token_next()
 {
     struct token *next_token = vector_peek_no_increment(current_process->token_vec);
     parse_ignore_nl_or_commment(next_token);
-    current_process->pos = next_token->pos;
+    if(next_token)
+    {
+        current_process->pos = next_token->pos;
+    }
     parser_last_token = next_token;
     return vector_peek(current_process->token_vec);
 }
@@ -297,7 +306,7 @@ int parse_exp(struct history *history)
 
 void parse_identifier(struct history *history)
 {
-    assert(token_peek_next()->type == NODE_TYPE_IDENTIFIER);
+    assert(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER);
     parse_single_token_to_node();
 }
 static bool is_keyword_variable_modifier(const char *val)
@@ -480,6 +489,19 @@ void parser_datatype_init_type_and_size_for_primitive(struct token* datatype_tok
     parser_datatype_adjust_size_for_seondary(datatype_out, datatype_secondary_token);
 }
 
+size_t size_of_struct(const char* struct_name)
+{
+    struct symbol* sym = symresolver_get_symbol(current_process, struct_name);
+    if(!sym)
+    {
+        return 0;
+    }
+    assert(sym->type == SYMBOL_TYPE_NODE);
+    struct node* node= sym->data;
+    assert(node->type = NODE_TYPE_STRUCT);
+    return node->_struct.body_n->body.size;
+}
+
 void parser_datatype_init_type_and_size(struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out, int pointer_depth, int expected_type)
 {
     if(!parser_datatype_is_secondary_allowed(expected_type) && datatype_secondary_token)
@@ -492,8 +514,14 @@ void parser_datatype_init_type_and_size(struct token* datatype_token, struct tok
             parser_datatype_init_type_and_size_for_primitive(datatype_token, datatype_secondary_token, datatype_out );
         break;
         case DATA_TYPE_EXPECT_STRUCT:
+            datatype_out->type = DATA_TYPE_STRUCT;
+            datatype_out->size = size_of_struct(datatype_token->sval);
+            //hell yeah!! get the struct node from the symresolver based on the name, and add a pointer to it in the datatype
+            //now all variables of that type, has a pointer to the struct node!
+            datatype_out->struct_node = struct_node_for_name(current_process, datatype_token->sval);
+        break;
         case DATA_TYPE_EXPECT_UNION:
-            compiler_error(current_process, "structure and union types are currently unsupported");
+            compiler_error(current_process, " union types are currently unsupported");
         break;
         default:
             compiler_error(current_process, "Unsupported datatype");
@@ -516,13 +544,13 @@ void parse_datatype_type(struct datatype* dtype)
 {   
     struct token* datatype_token = NULL;
     struct token* secondary_datatype_token = NULL;
-    parser_get_datatype_tokens(&datatype_token, &secondary_datatype_token);
+    parser_get_datatype_tokens(&datatype_token, &secondary_datatype_token); //pops keyword, eg struct
     int expected_type = parser_datatype_expected_for_type_string(datatype_token->sval);
     if(datatype_is_struct_or_union_for_name(datatype_token->sval))
     {
         if(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
         {
-            datatype_token == token_next();
+            datatype_token = token_next(); //datatype is now equal to the identifier token, which just was popped of
         }
         else
         {
@@ -585,22 +613,31 @@ void make_variable_node(struct datatype* dtype, struct token* name_token, struct
 
 void parser_scope_offset_for_stack(struct node* node, struct history* history)
 {
-    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
+    //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
+    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); 
     bool upward_stack = history->flags & HISTORY_FLAG_IS_UPWARD_STACK;
     int offset = -variable_size(node);
     if(upward_stack)
     {
-        #warning "Handle Upward Stack!"
-        compiler_error(current_process, "Upward stack not implemented!!");
+        size_t stack_addition = function_node_argument_stack_addition(parser_current_function);
+        offset = stack_addition;
+        if(last_entity) //last entity? set offset to the last variable size
+        {
+            //on each iteration, the prev datatype_size will equal the siza of ALL prvious var sizes!
+            offset = datatype_size(&variable_node(last_entity->node)->var.type);
+        }
     }
     if(last_entity)
     {
-        offset += variable_node(last_entity->node)->var.aoffset;
+        offset += variable_node(last_entity->node)->var.aoffset; //this offset var size, plus total offset of last entry!!!
         if(variable_node_is_primitive(node))
         {
             variable_node(node)->var.padding = padding(upward_stack? offset: -offset, node->var.type.size);
         }
     }
+
+    //FIXME: according to github repo PeachCompiler, aoffset is added to the node here, with the total size of this alignment, and the alignment for the previous variables in the scope
+    //The line 630, will increamentally increase tha aoffset for all variables on the stack!
 }
 
 void parser_scope_offset_for_global(struct node* node, struct history* history)
@@ -631,7 +668,7 @@ void parser_scope_offset(struct node* node, struct history* history)
         return;
     }
 
-        if(history->flags & HISTORY_FLAG_INSIDE_STRUCTURE)
+    if(history->flags & HISTORY_FLAG_INSIDE_STRUCTURE)
     {
         parser_scope_offset_for_structure(node, history);
         return;
@@ -643,7 +680,6 @@ void make_variable_node_and_register(struct history* history, struct datatype* d
 {
     make_variable_node(dtype, name_token, value_node);
     struct node* var_node = node_pop();
-    #warning "remember to calculate the scope offset and push to the scope"
     //calculate the scope offset
     parser_scope_offset(var_node, history);
     //push the variable to the scope
@@ -706,11 +742,60 @@ void parse_variable(struct datatype* dtype, struct token* name_token, struct his
     make_variable_node_and_register(history, dtype, name_token, value_node);
 }
 
+void parse_function_body(struct history* history)
+{
+    parse_body(NULL, history_down(history, history->flags | HISTORY_FLAG_INSIDE_FUNCTION));
+}
+
+void parse_function(struct datatype* ret_type, struct token* name_token, struct history* history)
+{
+    struct vector* arguments_vector = NULL;
+    parser_scope_new();
+    make_function_node(ret_type, name_token->sval, NULL, NULL);
+    struct node* function_node = node_peek();
+    parser_current_function = function_node;
+
+    if(datatype_is_struct_or_union(ret_type))//returning a struct or union
+    {
+        function_node->func.args.stack_addition += DATA_SIZE_DWORD;
+    }
+    expect_op("(");
+    arguments_vector = parser_function_arguments(history_begin(0));
+    expect_sym(')');
+    function_node->func.args.vector = arguments_vector;
+
+    if(symresolver_get_symbol_for_native_function(current_process, name_token->sval))
+    {
+        function_node->func.flags |= FUNCTION_NODE_FLAG_IS_NATIVE;
+    }
+
+    if(token_next_is_symbol('{'))//not prototype
+    {
+        parse_function_body(history_begin(0));
+        struct node* body_node = node_pop();
+        function_node->func.body_n = body_node;
+    }
+    else //prototype
+    {
+        expect_sym(';');
+    }
+    parser_current_function = NULL;
+    parser_scope_finish();
+}
+
+
 void parse_symbol()
 {
-    compiler_error(current_process, "symbols are not yet supported\n");
+    if(token_next_is_symbol('{'))
+    {
+        size_t variable_size = 0;
+        struct history* history  = history_begin(HISTORY_FLAG_IS_GLOBAL_SCOPE);
+        parse_body(&variable_size, history);
+        struct node* body_node = node_pop();
+        //lets us examine 
+        node_push(body_node);
+    }
 }
-void parse_keyword(struct history *history);
 
 void parse_statement(struct history* history)
 {
@@ -730,6 +815,60 @@ void parse_statement(struct history* history)
     expect_sym(';');
 
     //all statements end with semicolons;
+}
+
+void token_read_dots(size_t amount)
+{
+    for(size_t i = 0; i < amount; i++)
+    {
+        expect_op(".");
+    }
+}
+
+void parse_variable_full(struct history* history)
+{
+    struct datatype dtype;
+    parse_datatype_type(&dtype);
+
+    struct token* name_token = NULL;
+
+    if(token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    {
+        name_token = token_next();
+    }
+
+    parse_variable(&dtype, name_token, history);
+}
+
+struct vector* parser_function_arguments(struct history* history)
+{
+    parser_scope_new();
+    struct vector* arguments_vec = vector_create(sizeof(struct node*));
+
+    while(!token_next_is_symbol(')'))
+    {
+        if(token_next_is_operator("."))
+        {
+            token_read_dots(3);
+            parser_scope_finish();
+            return arguments_vec;
+        }
+
+        parse_variable_full(history_down(history, history->flags | HISTORY_FLAG_IS_UPWARD_STACK));
+        struct node* argument_node = node_pop();
+        vector_push(arguments_vec, &argument_node);
+
+        if(!token_next_is_operator(","))
+        {
+            break;
+        }
+
+        //pop of the token
+        token_next(); 
+        
+    }
+    parser_scope_finish();
+    return arguments_vec;
 }
 
 void parser_append_size_for_node_struct_union(struct history* history, size_t* _variable_size, struct node* node)
@@ -891,7 +1030,7 @@ void parse_body_multiple_statements(size_t* variable_size, struct vector* body_v
 
 void parse_body(size_t* variable_size, struct history* history)
 {
-    parser_scope_new();
+    parser_scope_new(); //current scope in compile process is updated with the newly created one
     size_t tmp_size = 0x00;
     if(!variable_size)
     {
@@ -917,9 +1056,38 @@ void parse_body(size_t* variable_size, struct history* history)
     #warning "Function stack size needs to be adjusted!"
 }
 
-void parse_struct_no_new_scope(struct datatype* dtype)
+void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declaration)
 {
+    struct node* body_node = NULL;
+    size_t body_variable_size = 0;
+    if(!is_forward_declaration)
+    {
+        parse_body(&body_variable_size, history_begin(HISTORY_FLAG_INSIDE_STRUCTURE));
+        body_node = node_pop();
+    }
+    make_struct_node(dtype->type_str, body_node);
+    struct node* struct_node = node_pop();
+    if(body_node)
+    {
+        dtype->size= body_node->body.size;
+    }
 
+    if(token_is_identifier(token_peek_next()))
+    {
+        struct token* var_name = token_next();
+        struct_node->flags != NODE_FLAG_HAS_VARIABLE_COMBINED;
+        if(dtype->flags & DATATYPE_FLAG_STRUCT_UNION_NO_NAME)
+        {
+            dtype->type_str = var_name->sval;
+            dtype->flags &= ~DATATYPE_FLAG_STRUCT_UNION_NO_NAME;
+            struct_node->_struct.name = var_name->sval;
+        }
+
+        make_variable_node_and_register(history_begin(0), dtype, var_name, NULL);
+        struct_node->_struct.var = node_pop();
+    }
+    expect_sym(';');
+    node_push(struct_node);
 }
 
 void parse_struct(struct datatype* dtype)
@@ -931,7 +1099,7 @@ void parse_struct(struct datatype* dtype)
         parser_scope_new();
     }
 
-    parse_struct_no_new_scope(dtype);
+    parse_struct_no_new_scope(dtype, is_forward_declaration);
 
     if(!is_forward_declaration)
     {
@@ -965,6 +1133,11 @@ void parse_variable_function_or_struct_union(struct history *history)
     if(datatype_is_struct_or_union(&dtype) && token_next_is_symbol('{'))
     {
         parse_struct_or_union(&dtype);
+
+        struct node* su_node = node_pop();
+        symresolver_build_for_node(current_process, su_node);
+        node_push(su_node);
+        return;
     }
 
     parser_ignore_int(&dtype);
@@ -977,6 +1150,11 @@ void parse_variable_function_or_struct_union(struct history *history)
     }
 
     //check if the identifier is a function decleartion!
+    if(token_next_is_operator("("))
+    {
+        parse_function(&dtype, name_token, history);
+        return;
+    }
 
     parse_variable( &dtype, name_token, history); //we have variable node, with or without a value node!
 
@@ -1031,6 +1209,7 @@ int parse_expressionable_single(struct history *history)
 
     case TOKEN_TYPE_IDENTIFIER:
         parse_identifier(history);
+        res = 0;
         break;
 
     case TOKEN_TYPE_OPERATOR:
@@ -1079,7 +1258,12 @@ int parse_next()
         break;
     case TOKEN_TYPE_KEYWORD:
         parse_keyword_for_global();
-    break;
+        break;
+
+    case TOKEN_TYPE_SYMBOL:
+        parse_symbol();
+        break;
+
 
     }
     return 0;
