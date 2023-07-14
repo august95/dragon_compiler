@@ -245,7 +245,9 @@ enum
 
 enum
 {
-    NODE_FLAG_INSIDE_EXPRESSION = 0x00000001
+    NODE_FLAG_INSIDE_EXPRESSION = 0x00000001,
+    NODE_FLAG_IS_FORWARD_DECLARATION =  0x00000010,
+    NODE_FLAG_HAS_VARIABLE_COMBINED = 0x00000100
 };
 
 enum
@@ -322,8 +324,66 @@ struct node
             int aoffset;
             struct node* val;
         } var;
-    };
 
+        struct varlist
+        {
+            //list of struct node variables
+            struct vector* list;
+        } var_list;
+
+        struct bracket
+        {
+        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
+        struct node* inner;
+        } bracket;
+
+        struct _struct
+        {
+            const char* name;
+            struct node* body_n; //the body {}
+            struct node* var;   // single instantiation, null ptr if {body};
+        } _struct;
+
+        struct body
+        {
+            struct vector* statements;
+
+             // size of all statements
+            size_t size;
+        
+            //true if the variable size has been increased because of padding
+            bool padded;
+
+            //ptr to the larges variable node in the statements vector
+            struct node* larges_var_node;
+
+        } body;
+
+        struct function
+        {
+            int flags;
+            //return type
+            struct datatype rtype;
+
+            //function name
+            const char* name;
+
+            struct function_arguments
+            {
+                //vector of functions parameters, must be type NODE_TYPE_VARIABLE
+                struct vector* vector;
+
+                //how much to add to EBP to find the first arguemt
+                size_t stack_addition;
+            } args;
+            //prointer to the function body node, NULL if this is a prototype
+            struct node* body_n;
+
+            //stack size for all variables inside the function
+            size_t stack_size;
+
+        } func;
+    };
     union
     {
         char cval;
@@ -332,40 +392,6 @@ struct node
         unsigned long lnum;
         unsigned long long llnum;
     };
-
-    struct varlist
-    {
-        //list of struct node variables
-        struct vector* list;
-    } var_list;
-
-    struct bracket
-    {
-        //int x[50]. [50] is the bracket node. Inner is NODE_TYPE_NUMBER with value of 50
-        struct node* inner;
-    } bracket;
-
-    struct _struct
-    {
-        const char* name;
-        struct node* body_n;
-        struct node* var;
-    } _struct;
-
-    struct body
-    {
-        struct vector* statements;
-
-         // size of all statements
-        size_t size;
-        
-        //true if the variable size has been increased because of padding
-        bool padded;
-
-        //ptr to the larges variable node in the statements vector
-        struct node* larges_var_node;
-
-    } body;
 
 };
 
@@ -410,8 +436,14 @@ enum
     DATA_SIZE_BYTE = 1,
     DATA_SIZE_WORD = 2,
     DATA_SIZE_DWORD = 4,
-    DATA_SIZE_DDWORD = 4
+    DATA_SIZE_DDWORD = 8
 };
+
+enum
+{
+    FUNCTION_NODE_FLAG_IS_NATIVE = 0b00000001
+};
+
 int compile_file(const char *filename, const char *out_file, int flags);
 struct compile_process *compile_process_create(const char *filename, const char *filename_out, int flags);
 
@@ -429,6 +461,7 @@ void *lex_process_tokens(struct lex_process *process);
 int lex(struct lex_process *process);
 int parse(struct compile_process *process);
 bool token_is_keyword(struct token *token, const char *value);
+bool token_is_identifier(struct token* token);
 /*
     builds tokens for the input string
 */
@@ -445,10 +478,17 @@ struct node *node_create(struct node *_node);
 void make_exp_node(struct node *left_node, struct node *right_node, const char *op);
 void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
+void make_struct_node(const char * name, struct node* body_node);
+void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
+
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool node_is_struct_or_union_variable(struct node* node);
 bool variable_node_is_primitive(struct node* node);
+
+struct node* node_from_sym(struct symbol* sym);
+struct node* node_from_symbol(struct compile_process* current_process, const char* name);
+struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
 
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
@@ -500,6 +540,14 @@ void* scope_last_entity(struct compile_process* process);
 void scope_push(struct compile_process* process, void*ptr, size_t elem_size);
 void scope_finish(struct compile_process* process);
 struct scope* scope_current(struct compile_process* process);
+
+void symresolver_build_for_node(struct compile_process* process, struct node* node);
+struct symbol* symresolver_get_symbol(struct compile_process* process, const char* name);
+void symresolver_initialize(struct compile_process* process);
+void symresolver_new_table(struct compile_process* process);
+void symresolver_end_table(struct compile_process* process);
+struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
+size_t function_node_argument_stack_addition(struct node* node);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
