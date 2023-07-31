@@ -1075,7 +1075,7 @@ void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declarati
     if(token_is_identifier(token_peek_next()))
     {
         struct token* var_name = token_next();
-        struct_node->flags != NODE_FLAG_HAS_VARIABLE_COMBINED;
+        struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;
         if(dtype->flags & DATATYPE_FLAG_STRUCT_UNION_NO_NAME)
         {
             dtype->type_str = var_name->sval;
