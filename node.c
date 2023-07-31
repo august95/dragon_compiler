@@ -184,3 +184,13 @@ size_t function_node_argument_stack_addition(struct node* node)
     assert(node->type == NODE_TYPE_FUNCTION);
     return node->func.args.stack_addition;
 }
+
+bool node_is_expression_or_parantheses(struct node* node)
+{
+    return node->type == NODE_TYPE_EXPRESSION_PARANTHESES || node->type == NODE_TYPE_EXPRESSION;
+}
+
+bool node_is_value_type(struct node* node) //value: what can be passed into an variable?
+{
+    return node_is_expression_or_parantheses(node) || node->type == NODE_TYPE_IDENTIFIER || node->type == NODE_TYPE_NUMBER || node->type == NODE_TYPE_UNARY || node->type == NODE_TYPE_TENARY || node->type == NODE_TYPE_STRING;
+}

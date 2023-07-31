@@ -489,6 +489,8 @@ bool variable_node_is_primitive(struct node* node);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
+bool node_is_expression_or_parantheses(struct node* node);
+bool node_is_value_type(struct node* node);
 
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);

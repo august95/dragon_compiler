@@ -37,6 +37,9 @@ extern struct expresssionable_op_precedence_group op_precedence[TOTAL_OPERATOR_G
 extern struct node* parser_current_body;
 extern struct node* parser_current_function;
 
+// NODE_TYPE_BLANK
+struct node* parser_blank_node;
+
 enum
 {
     PARSER_SCOPE_ENTITY_ON_STACK = 0b00000001,
@@ -298,8 +301,29 @@ void parse_exp_normal(struct history *history)
     node_push(exp_node);
 }
 
-int parse_exp(struct history *history)
+void parse_for_parantheses(struct history* history)
 {
+    expect_op("(");
+    struct node* left_node = NULL;
+    struct node* tmp_node = node_peek_or_null();
+
+    //test(50+20) tmp node "test" becomes the left node
+    if(tmp_node && node_is_value_type(tmp_node))
+    {
+        left_node = tmp_node;
+        node_pop();
+    }
+
+
+}
+
+int parse_exp(struct history *history)
+{   
+    if(S_EQ(token_peek_next()->sval, "("))
+    {
+        parse_for_parantheses(history);
+    }
+
     parse_exp_normal(history);
     return 0;
 }
