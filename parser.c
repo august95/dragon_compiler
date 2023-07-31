@@ -301,11 +301,21 @@ void parse_exp_normal(struct history *history)
     node_push(exp_node);
 }
 
+void parser_deal_with_additional_expression()
+{
+    if(token_peek_next()->type == TOKEN_TYPE_OPERATOR)
+    {
+        parse_expressionable(history_begin(0));
+    }
+}
+void parse_expressionable_root(struct history *history);
 void parse_for_parantheses(struct history* history)
 {
     expect_op("(");
     struct node* left_node = NULL;
     struct node* tmp_node = node_peek_or_null();
+
+
 
     //test(50+20) tmp node "test" becomes the left node
     if(tmp_node && node_is_value_type(tmp_node))
@@ -313,8 +323,24 @@ void parse_for_parantheses(struct history* history)
         left_node = tmp_node;
         node_pop();
     }
+    struct node* exp_node = parser_blank_node;
+    if(!token_next_is_symbol(')'))
+    {
+        parse_expressionable_root(history_begin(0));
+        exp_node = node_pop();
+    }
 
+    expect_sym(')');
 
+    make_exp_parentheses_node(exp_node);
+
+    if(left_node)
+    {
+        struct node* parenthesis_node = node_pop();
+        make_exp_node(left_node, parenthesis_node, "()");
+    }
+
+    parser_deal_with_additional_expression();
 }
 
 int parse_exp(struct history *history)
@@ -323,8 +349,11 @@ int parse_exp(struct history *history)
     {
         parse_for_parantheses(history);
     }
+    else
+    {
+      parse_exp_normal(history);
+    }
 
-    parse_exp_normal(history);
     return 0;
 }
 
@@ -830,7 +859,7 @@ void parse_statement(struct history* history)
     }
 
     parse_expressionable_root(history);
-    if(token_peek_next()->type == TOKEN_TYPE_SYMBOL && !token_is_keyword(token_peek_next(), ";"))
+    if(token_peek_next()->type == TOKEN_TYPE_SYMBOL && !token_is_symbol(token_peek_next(), ';'))
     {
         parse_symbol();
         return;
@@ -1301,6 +1330,7 @@ int parse(struct compile_process *process)
     struct node *node = NULL;
     parser_last_token = NULL;
     node_set_vector(process->node_vec, process->node_tree_vec);
+    parser_blank_node = node_create(&(struct node){.type=NODE_TYPE_BLANK});
     vector_set_peek_pointer(process->token_vec, 0);
 
     while (parse_next() == 0)

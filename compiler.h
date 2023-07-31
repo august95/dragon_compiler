@@ -315,6 +315,12 @@ struct node
             const char *op;
         } exp;
 
+        struct parenthesis
+        {
+            // expression node inside the parentheses
+            struct node* exp;
+        } parenthesis;
+
         struct var
         {
             struct datatype type;
@@ -480,6 +486,7 @@ void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char * name, struct node* body_node);
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
+void make_exp_parentheses_node(struct node* exp_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
@@ -492,9 +499,9 @@ struct node* struct_node_for_name(struct compile_process* current_process, const
 bool node_is_expression_or_parantheses(struct node* node);
 bool node_is_value_type(struct node* node);
 
+
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
-bool datatype_is_struct_or_union_for_name(const char* name);
 bool token_is_operator(struct token* token, const char* val);
 
 bool datatype_is_struct_or_union(struct datatype* dtype);
@@ -512,7 +519,6 @@ struct vector* array_brackets_node_vector(struct  array_brackets* brackets);
 size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
-bool datatype_is_struct_or_union(struct datatype* dtype);
 
 //get the variable size for the given node
 size_t variable_size(struct node* var_node);
@@ -553,6 +559,7 @@ size_t function_node_argument_stack_addition(struct node* node);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
+
 
 enum
 {
