@@ -389,7 +389,22 @@ struct node
             size_t stack_size;
 
         } func;
+
+        struct statement
+        {
+            struct if_stmt
+            {
+                //if(cond) body
+                struct node* cond_node;
+                struct node* body_node;
+
+                // if().. else.. points to the else
+                struct node* next;
+
+            } if_stmt;
+        }stmt;
     };
+
     union
     {
         char cval;
@@ -487,6 +502,7 @@ void make_body_node(struct vector* body_vec, size_t size, bool padded, struct no
 void make_struct_node(const char * name, struct node* body_node);
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
 void make_exp_parentheses_node(struct node* exp_node);
+void make_if_node(struct node* cond_node, struct node* body_node, struct node* next_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
