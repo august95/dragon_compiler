@@ -392,6 +392,11 @@ struct node
 
         struct statement
         {
+            struct return_stmt
+            {   //the expression of the return
+                struct node* exp;
+            } return_stmt;
+
             struct if_stmt
             {
                 //if(cond) body
@@ -510,6 +515,7 @@ void make_function_node(struct datatype* ret_type, const char* name, struct vect
 void make_exp_parentheses_node(struct node* exp_node);
 void make_if_node(struct node* cond_node, struct node* body_node, struct node* next_node);
 void make_else_node(struct node* body_node);
+void make_return_node(struct node* exp_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();

@@ -90,6 +90,11 @@ void make_struct_node(const char * name, struct node* body_node)
     node_create(&(struct node){.type=NODE_TYPE_STRUCT, ._struct.body_n=body_node, ._struct.name=name, .flags=flags});
 }
 
+void make_return_node(struct node* exp_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_STATEMENT_RETURN, .stmt.return_stmt.exp=exp_node});
+}
+
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node)
 {
     node_create(&(struct node){.type=NODE_TYPE_FUNCTION, .func.name = name, .func.args.vector = arguemnts, .func.body_n = body_node, .func.rtype=*ret_type, .func.args.stack_addition=DATA_SIZE_DDWORD});
