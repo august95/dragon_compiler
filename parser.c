@@ -684,15 +684,15 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
     //finds the stack offset for the last entry in the scope, we calculates the enxt scope offset from there
     struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope(); 
     bool upward_stack = history->flags & HISTORY_FLAG_IS_UPWARD_STACK;
-    int offset = -variable_size(node);
+    int offset = -variable_size(node); 
     if(upward_stack)
     {
         size_t stack_addition = function_node_argument_stack_addition(parser_current_function);
-        offset = stack_addition;
+        offset = stack_addition; // offset is set to be the size of the esp and bpt
         if(last_entity) //last entity? set offset to the last variable size
         {
             //on each iteration, the prev datatype_size will equal the siza of ALL prvious var sizes!
-            offset = datatype_size(&variable_node(last_entity->node)->var.type);
+            offset = datatype_size(&variable_node(last_entity->node)->var.type); //offset is the size of the last entity in the previous stack entity
         }
     }
     if(last_entity)
@@ -703,7 +703,7 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
             variable_node(node)->var.padding = padding(upward_stack? offset: -offset, node->var.type.size);
         }
     }
-
+    variable_node(node)->var.aoffset = offset + (upward_stack ? variable_node(node)->var.padding : -variable_node(node)->var.padding);
     //FIXME: according to github repo PeachCompiler, aoffset is added to the node here, with the total size of this alignment, and the alignment for the previous variables in the scope
     //The line 630, will increamentally increase tha aoffset for all variables on the stack!
 }

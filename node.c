@@ -101,8 +101,10 @@ void make_return_node(struct node* exp_node)
 
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node)
 {
+    //stack_addtion set to 8 to cover for bpt esp
     node_create(&(struct node){.type=NODE_TYPE_FUNCTION, .func.name = name, .func.args.vector = arguemnts, .func.body_n = body_node, .func.rtype=*ret_type, .func.args.stack_addition=DATA_SIZE_DDWORD});
     #warning "don't forget to build the frame elements"
+
 }
 
 void make_else_node(struct node* body_node)
