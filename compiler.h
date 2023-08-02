@@ -402,6 +402,12 @@ struct node
                 struct node* next;
 
             } if_stmt;
+
+            struct else_stmt
+            {
+                struct node* body_node;
+            } else_stmt;
+
         }stmt;
     };
 
@@ -503,6 +509,7 @@ void make_struct_node(const char * name, struct node* body_node);
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
 void make_exp_parentheses_node(struct node* exp_node);
 void make_if_node(struct node* cond_node, struct node* body_node, struct node* next_node);
+void make_else_node(struct node* body_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
