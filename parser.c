@@ -704,8 +704,6 @@ void parser_scope_offset_for_stack(struct node* node, struct history* history)
         }
     }
     variable_node(node)->var.aoffset = offset + (upward_stack ? variable_node(node)->var.padding : -variable_node(node)->var.padding);
-    //FIXME: according to github repo PeachCompiler, aoffset is added to the node here, with the total size of this alignment, and the alignment for the previous variables in the scope
-    //The line 630, will increamentally increase tha aoffset for all variables on the stack!
 }
 
 void parser_scope_offset_for_global(struct node* node, struct history* history)
