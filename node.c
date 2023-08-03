@@ -132,6 +132,15 @@ void make_switch_node(struct node* exp_node, struct node* body_node, struct vect
     node_create(&(struct node){.type=NODE_TYPE_STATEMENT_SWITCH, .stmt.switch_stmt.exp=exp_node, .stmt.switch_stmt.body=body_node, .stmt.switch_stmt.cases = cases, .stmt.switch_stmt.has_default_case=has_default_case});
 }
 
+void make_break_node()
+{
+    node_create(&(struct node){.type=NODE_TYPE_STATEMENT_BREAK});
+}
+
+void make_continue_node()
+{
+    node_create(&(struct node){.type=NODE_TYPE_EXPRESSION});
+}
 
 struct node* node_from_sym(struct symbol* sym)
 {
