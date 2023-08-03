@@ -449,7 +449,17 @@ struct node
 
             }switch_stmt;
 
+            struct goto_stm
+            {
+                struct node* label;
+            } _goto;
+
         }stmt;
+
+        struct node_label
+        {    
+            struct node* name;
+        } label;
     };
 
     union
@@ -558,6 +568,8 @@ void make_do_while_node(struct node* exp_node, struct node* body_node);
 void make_switch_node(struct node* exp_node, struct node* body_node, struct vector* cases, bool has_default_case);
 void make_continue_node();
 void make_break_node();
+void make_label_node(struct node* name_node);
+void make_goto_node(struct node* label_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();

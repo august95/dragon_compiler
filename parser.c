@@ -46,7 +46,7 @@ struct history *history_down(struct history *history, int flags)
     new_history->flags = flags;
     return new_history;
 }
-
+void parse_label(struct history* history);
 int parse_expressionable_single(struct history *history);
 void parse_expressionable(struct history *history);
 void parse_body(size_t* variable_size, struct history* history);
@@ -900,6 +900,14 @@ void parse_symbol()
         //lets us examine 
         node_push(body_node);
     }
+
+    else if(token_next_is_symbol(':'))
+    {
+        parse_label(history_begin(0));
+        return;
+    }
+
+    compiler_error(current_process, "invalid symbol provided");
 }
 
 void parse_statement(struct history* history)
@@ -1468,6 +1476,26 @@ void parse_break(struct history* history)
     expect_sym(';');
     make_break_node();
 }
+
+void parse_goto(struct history* history)
+{
+    expect_keyword("goto");
+    parse_identifier(history_begin(0));
+    expect_sym(';');
+    struct node* label_node = node_pop();
+    make_goto_node(label_node);
+} 
+void parse_label(struct history* history)
+{
+    expect_sym(':');
+    struct node* label_name_node = node_pop();
+    if(label_name_node->type != NODE_TYPE_IDENTIFIER)
+    {
+        compiler_warning(current_process, "Expecting an identifier for label");
+    }
+    make_label_node(label_name_node);
+}
+
 void parse_keyword(struct history *history)
 {
     struct token *token = token_peek_next();
@@ -1508,6 +1536,10 @@ void parse_keyword(struct history *history)
     if(S_EQ(token->sval, "switch"))
     {
         parse_switch(history);
+    }
+    if(S_EQ(token->sval, "goto"))
+    {
+        parse_goto(history);
     }
     
 }
