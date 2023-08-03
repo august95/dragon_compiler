@@ -104,7 +104,6 @@ void make_function_node(struct datatype* ret_type, const char* name, struct vect
     //stack_addtion set to 8 to cover for bpt esp
     node_create(&(struct node){.type=NODE_TYPE_FUNCTION, .func.name = name, .func.args.vector = arguemnts, .func.body_n = body_node, .func.rtype=*ret_type, .func.args.stack_addition=DATA_SIZE_DDWORD});
     #warning "don't forget to build the frame elements"
-
 }
 
 void make_else_node(struct node* body_node)
@@ -116,6 +115,12 @@ void make_if_node(struct node* cond_node, struct node* body_node, struct node* n
 {
     node_create(&(struct node){.type=NODE_TYPE_STATEMENT_IF, .stmt.if_stmt.cond_node=cond_node, .stmt.if_stmt.body_node=body_node,.stmt.if_stmt.next=next_node});
 }
+
+void make_while_node(struct node* exp_node, struct node* body_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_STATEMENT_WHILE, .stmt.while_stmt.exp_node=exp_node, .stmt.while_stmt.body_node=body_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
     if(sym->type != SYMBOL_TYPE_NODE)

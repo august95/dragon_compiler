@@ -1300,6 +1300,25 @@ void parse_if_stmt(struct history *history)
     make_if_node(cond_node, body_node, parse_else_or_else_if(history));
 }
 
+void parse_keyword_parantheses_expression(const char* keyword)
+{
+    //(1)
+    expect_keyword(keyword);
+    expect_op("(");
+    parse_expressionable_root(history_begin(0));
+    expect_sym(')');
+}
+
+void parse_while(struct history *history)
+{
+    parse_keyword_parantheses_expression("while");
+    struct node* exp_node = node_pop();
+    size_t variable_size = 0;
+    parse_body(&variable_size, history);
+    struct node* body_node = node_pop();
+    make_while_node(exp_node, body_node);
+}
+
 bool parse_for_loop_part(struct history *history)
 {
     if(token_next_is_symbol(';'))
@@ -1393,7 +1412,10 @@ void parse_keyword(struct history *history)
     {
         parse_for_stmt(history);
     }
-
+    if(S_EQ(token->sval, "while"))
+    {
+        parse_while(history);
+    }
 }
 
 int parse_expressionable_single(struct history *history)

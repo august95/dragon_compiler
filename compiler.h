@@ -145,6 +145,7 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+//tree structure of scopes that holds scope entiries, and contains the scope offset and alignment data for everything that is allocated on stack
 struct scope
 {
     int flags;
@@ -421,6 +422,13 @@ struct node
                 struct node* loop_node;
                 struct node* body_node;
             } for_stmt;
+
+            struct while_stmt
+            {
+                struct node* exp_node;
+                struct node* body_node;
+            } while_stmt;
+
         }stmt;
     };
 
@@ -525,6 +533,7 @@ void make_if_node(struct node* cond_node, struct node* body_node, struct node* n
 void make_else_node(struct node* body_node);
 void make_return_node(struct node* exp_node);
 void make_for_node(struct node* init_node, struct node* cond_node, struct node* loop_node, struct node* body_node);
+void make_while_node(struct node* exp_node, struct node* body_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
