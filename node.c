@@ -157,6 +157,11 @@ void make_goto_node(struct node* label_node)
     node_create(&(struct node){.type=NODE_TYPE_STATEMENT_GOTO, .stmt._goto.label=label_node});
 }
 
+void make_tenary_node(struct node* true_node, struct node* false_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_TENARY, .tenary.true_node=true_node, .tenary.false_node=false_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
     if(sym->type != SYMBOL_TYPE_NODE)

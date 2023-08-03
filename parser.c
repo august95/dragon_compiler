@@ -10,7 +10,8 @@ enum
     HISTORY_FLAG_IS_GLOBAL_SCOPE            = 0b00000100,
     HISTORY_FLAG_INSIDE_STRUCTURE           = 0b00001000,
     HISTORY_FLAG_INSIDE_FUNCTION            = 0b00010000,
-    HISTORY_FLAG_INSIDE_SWITCH_STATEMENT    = 0b00100000
+    HISTORY_FLAG_INSIDE_SWITCH_STATEMENT    = 0b00100000,
+    HISTORY_FLAG_PARANTHESES_IS_NOT_A_FUNCTION= 0b01000000
 };
 
 struct history_cases
@@ -53,6 +54,7 @@ void parse_body(size_t* variable_size, struct history* history);
 void parse_keyword(struct history *history);
 void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history);
 struct vector* parser_function_arguments(struct history* history);
+void parse_for_tenary(struct history *history);
 
 static struct compile_process *current_process;
 static struct token *parser_last_token;
@@ -402,6 +404,10 @@ int parse_exp(struct history *history)
     if(S_EQ(token_peek_next()->sval, "("))
     {
         parse_for_parantheses(history);
+    }
+    else if(S_EQ(token_peek_next()->sval, "?"))
+    {
+      parse_for_tenary(history);
     }
     else
     {
@@ -1512,6 +1518,20 @@ void parse_label(struct history* history)
         compiler_warning(current_process, "Expecting an identifier for label");
     }
     make_label_node(label_name_node);
+}
+
+void parse_for_tenary(struct history *history)
+{
+    struct node* condititon_node = node_pop();
+    expect_op("?");
+    parse_expressionable_root(history_down(history, HISTORY_FLAG_PARANTHESES_IS_NOT_A_FUNCTION));
+    struct node* true_result_node = node_pop();
+    expect_sym(':');
+    parse_expressionable_root(history_down(history, HISTORY_FLAG_PARANTHESES_IS_NOT_A_FUNCTION));
+    struct node* false_result_node = node_pop();
+    make_tenary_node(true_result_node, false_result_node);
+    struct node* tenary_node = node_pop();
+    make_exp_node(condititon_node, tenary_node, "?");
 }
 
 void parse_keyword(struct history *history)
