@@ -1504,43 +1504,53 @@ void parse_keyword(struct history *history)
         parse_variable_function_or_struct_union(history);
         return;
     }
-    if(S_EQ(token->sval, "break"))
+    else if(S_EQ(token->sval, "break"))
     {
         parse_break(history);
+        return;
     }
-    if(S_EQ(token->sval, "continue"))
+    else if(S_EQ(token->sval, "continue"))
     {
         parse_continue(history);
+        return;
     }
-    if(S_EQ(token->sval, "return"))
+    else if(S_EQ(token->sval, "return"))
     {
         parse_return(history);
+        return;
     }
-    if(S_EQ(token->sval, "if"))
+    else if(S_EQ(token->sval, "if"))
     {
         parse_if_stmt(history);
         return;
     }
-    if(S_EQ(token->sval, "for"))
+    else if(S_EQ(token->sval, "for"))
     {
         parse_for_stmt(history);
+        return;
     }
-    if(S_EQ(token->sval, "while"))
+    else if(S_EQ(token->sval, "while"))
     {
         parse_while(history);
+        return;
     }
-    if(S_EQ(token->sval, "do"))
+    else if(S_EQ(token->sval, "do"))
     {
         parse_do_while(history);
+        return;
     }
-    if(S_EQ(token->sval, "switch"))
+    else if(S_EQ(token->sval, "switch"))
     {
         parse_switch(history);
+        return;
     }
-    if(S_EQ(token->sval, "goto"))
+    else if(S_EQ(token->sval, "goto"))
     {
         parse_goto(history);
+        return;
     }
+
+    compiler_error(current_process, "invalid keyword\n");
     
 }
 
