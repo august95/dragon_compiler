@@ -449,6 +449,11 @@ struct node
 
             }switch_stmt;
 
+            struct case_stmt
+            {
+                struct node* exp;
+            } _case;
+
             struct goto_stm
             {
                 struct node* label;
@@ -570,6 +575,7 @@ void make_continue_node();
 void make_break_node();
 void make_label_node(struct node* name_node);
 void make_goto_node(struct node* label_node);
+void make_case_node(struct node* exp_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
