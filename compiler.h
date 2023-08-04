@@ -145,6 +145,7 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+//tree structure of scopes that holds scope entiries, and contains the scope offset and alignment data for everything that is allocated on stack
 struct scope
 {
     int flags;
@@ -290,6 +291,11 @@ struct datatype
     } array;
 };
 
+struct parsed_switch_case
+{
+    int index;
+};
+
 struct node
 {
     int type;
@@ -315,6 +321,12 @@ struct node
             const char *op;
         } exp;
 
+        struct parenthesis
+        {
+            // expression node inside the parentheses
+            struct node* exp;
+        } parenthesis;
+
         struct var
         {
             struct datatype type;
@@ -324,6 +336,12 @@ struct node
             int aoffset;
             struct node* val;
         } var;
+
+        struct node_tenary
+        {
+            struct node* true_node;
+            struct node* false_node;
+        } tenary;
 
         struct varlist
         {
@@ -343,6 +361,13 @@ struct node
             struct node* body_n; //the body {}
             struct node* var;   // single instantiation, null ptr if {body};
         } _struct;
+
+        struct _union
+        {
+            const char* name;
+            struct node* body_n; //the body {}
+            struct node* var;   // single instantiation, null ptr if {body};
+        } _union;
 
         struct body
         {
@@ -383,7 +408,84 @@ struct node
             size_t stack_size;
 
         } func;
+
+        struct statement
+        {
+            struct return_stmt
+            {   //the expression of the return
+                struct node* exp;
+            } return_stmt;
+
+            struct if_stmt
+            {
+                //if(cond) body
+                struct node* cond_node;
+                struct node* body_node;
+
+                // if().. else.. points to the else
+                struct node* next;
+
+            } if_stmt;
+
+            struct else_stmt
+            {
+                struct node* body_node;
+            } else_stmt;
+
+            struct for_stmt
+            {
+                //for( int i = 0; i < 30; i++){}
+                struct node* init_node;
+                struct node* cond_node;
+                struct node* loop_node;
+                struct node* body_node;
+            } for_stmt;
+
+            struct while_stmt
+            {
+                struct node* exp_node;
+                struct node* body_node;
+            } while_stmt;
+
+            struct do_while_stmt
+            {
+                struct node* exp_node;
+                struct node* body_node;                
+            } do_while_stmt;
+
+            struct switch_stmt
+            {   
+                struct node* exp;
+                struct node* body;
+                struct vector* cases;
+                bool has_default_case;
+
+            }switch_stmt;
+
+            struct case_stmt
+            {
+                struct node* exp;
+            } _case;
+
+            struct goto_stm
+            {
+                struct node* label;
+            } _goto;
+
+        }stmt;
+
+        struct node_label
+        {    
+            struct node* name;
+        } label;
+
+        struct cast 
+        {
+            struct datatype dtype;
+            struct node* operand;
+        }cast;
     };
+
     union
     {
         char cval;
@@ -479,7 +581,23 @@ void make_exp_node(struct node *left_node, struct node *right_node, const char *
 void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char * name, struct node* body_node);
+void make_union_node(const char * name, struct node* body_node);
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
+void make_exp_parentheses_node(struct node* exp_node);
+void make_if_node(struct node* cond_node, struct node* body_node, struct node* next_node);
+void make_else_node(struct node* body_node);
+void make_return_node(struct node* exp_node);
+void make_for_node(struct node* init_node, struct node* cond_node, struct node* loop_node, struct node* body_node);
+void make_while_node(struct node* exp_node, struct node* body_node);
+void make_do_while_node(struct node* exp_node, struct node* body_node);
+void make_switch_node(struct node* exp_node, struct node* body_node, struct vector* cases, bool has_default_case);
+void make_continue_node();
+void make_break_node();
+void make_label_node(struct node* name_node);
+void make_goto_node(struct node* label_node);
+void make_case_node(struct node* exp_node);
+void make_tenary_node(struct node* true_node, struct node* false_node);
+void make_cast_node(struct datatype* dtype, struct node* operand_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
@@ -489,12 +607,15 @@ bool variable_node_is_primitive(struct node* node);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
-
+struct node* union_node_for_name(struct compile_process* current_process, const char* name);
+bool node_is_expression_or_parantheses(struct node* node);
+bool node_is_value_type(struct node* node);
+bool node_is_expression(struct node* node, const char* op);
+bool is_array_node(struct node* node);
+bool is_node_assignment(struct node* node);
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
-bool datatype_is_struct_or_union_for_name(const char* name);
 bool token_is_operator(struct token* token, const char* val);
-
 bool datatype_is_struct_or_union(struct datatype* dtype);
 bool datatype_is_struct_or_union_for_name(const char* name);
 size_t datatype_size_for_array_access(struct datatype* dtype);
@@ -510,7 +631,6 @@ struct vector* array_brackets_node_vector(struct  array_brackets* brackets);
 size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct array_brackets* brackets, int index);
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
-bool datatype_is_struct_or_union(struct datatype* dtype);
 
 //get the variable size for the given node
 size_t variable_size(struct node* var_node);
@@ -552,6 +672,7 @@ size_t function_node_argument_stack_addition(struct node* node);
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
 
+
 enum
 {
     ASSOSCIATIVITY_LEFT_TO_RIGHT,
@@ -564,4 +685,56 @@ struct expresssionable_op_precedence_group
     int associtivity;
 };
 
+
+
+struct fixup;
+/*
+* Fixes the fixup
+* Returns true if the fixup was successful.
+*/
+typedef bool(*FIXUP_FIX)(struct fixup* fixup);
+
+/*
+* Signifies the fizup has been removed from memory.
+* the implementor of this function pointer should free any memory related to the fixup.
+*/
+typedef void(*FIXUP_END)(struct fixup* fixup);
+
+struct fixup_config
+{
+    FIXUP_FIX fix;
+    FIXUP_END end;
+    void *private;
+};
+
+struct fixup_system
+{
+    //vector of the fixups
+    struct vector* fixups;
+};
+
+enum
+{
+    FIXUP_FLAG_RESOLVED = 0b00000001
+};
+
+struct fixup
+{
+    int flags;
+    struct fixup_system* system;
+    struct fixup_config config;
+};
+
+struct fixup_system* fix_sys_new();
+struct fixup_config* fixup_config(struct fixup * fixup);
+void fixup_free(struct fixup* fixup);
+void fixup_start_iteration(struct fixup_system* system);
+struct fixup* fixup_next(struct fixup_system* system);
+void fixup_sys_fixups_free(struct fixup_system* system);
+void fixup_sys_free(struct fixup_system* system);
+int fixup_sys_unresolved_fixups_count(struct fixup_system* system);
+struct fixup* fixup_register(struct fixup_system* system, struct fixup_config* config);
+bool fixup_resolve(struct fixup* fixup);
+void* fixup_private(struct fixup* fixup);
+bool fixups_resolve(struct fixup_system* system);
 #endif /* CCOMPIELR_H*/
