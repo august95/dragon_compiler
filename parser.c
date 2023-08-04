@@ -55,6 +55,8 @@ void parse_keyword(struct history *history);
 void parse_variable(struct datatype* dtype, struct token* name_token, struct history* history);
 struct vector* parser_function_arguments(struct history* history);
 void parse_for_tenary(struct history *history);
+void parse_datatype(struct datatype* dtype);
+void parse_for_cast();
 
 static struct compile_process *current_process;
 static struct token *parser_last_token;
@@ -368,10 +370,14 @@ void parse_expressionable_root(struct history *history);
 void parse_for_parantheses(struct history* history)
 {
     expect_op("(");
+    if(token_peek_next()->type == TOKEN_TYPE_KEYWORD)
+    {
+        parse_for_cast();
+        return;
+    }
+
     struct node* left_node = NULL;
     struct node* tmp_node = node_peek_or_null();
-
-
 
     //test(50+20) tmp node "test" becomes the left node
     if(tmp_node && node_is_value_type(tmp_node))
@@ -399,15 +405,64 @@ void parse_for_parantheses(struct history* history)
     parser_deal_with_additional_expression();
 }
 
+void parse_for_comma(struct history *history)
+{
+    token_next(); //skip comma
+    struct node* left_node = node_pop();
+    parse_expressionable_root(history);
+    struct node* right_node = node_pop();
+    make_exp_node(left_node, right_node, ",");
+}
+
+void parse_for_array(struct history* history)
+{
+    struct node* left_node = node_peek_or_null();
+    if(left_node)
+    {
+        node_pop();
+    }
+    expect_op("[");
+    parse_expressionable_root(history);
+    expect_sym(']');
+    struct node* exp_node = node_pop();
+    make_bracket_node(exp_node);
+
+    if(left_node)
+    {
+        struct node* bracket_node = node_pop();
+        make_exp_node(left_node, bracket_node, "[]");
+    }
+}
+
+void parse_for_cast()
+{
+    //'(' has allready been parsed  i.e (char) 
+    struct datatype dtype;
+    parse_datatype(&dtype);
+    expect_sym(')');
+
+    parse_expressionable(history_begin(0));
+    struct node* operand_node = node_pop();
+    make_cast_node(&dtype, operand_node);
+}
+
 int parse_exp(struct history *history)
 {   
     if(S_EQ(token_peek_next()->sval, "("))
     {
         parse_for_parantheses(history);
     }
+    else if(S_EQ(token_peek_next()->sval, "["))
+    {
+      parse_for_array(history);
+    }
     else if(S_EQ(token_peek_next()->sval, "?"))
     {
       parse_for_tenary(history);
+    }
+    else if(S_EQ(token_peek_next()->sval, ","))
+    {
+      parse_for_comma(history);
     }
     else
     {
