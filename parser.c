@@ -1,6 +1,7 @@
 #include "compiler.h"
 #include "helpers/vector.h"
 #include <assert.h>
+
 //#include "datatype.c"
 
 enum 
@@ -59,6 +60,7 @@ void parse_datatype(struct datatype* dtype);
 void parse_for_cast();
 
 static struct compile_process *current_process;
+static struct fixup_system* parser_fixup_sys;
 static struct token *parser_last_token;
 extern struct expresssionable_op_precedence_group op_precedence[TOTAL_OPERATOR_GROUPS];
 extern struct node* parser_current_body;
@@ -1741,6 +1743,7 @@ int parse(struct compile_process *process)
     parser_last_token = NULL;
     node_set_vector(process->node_vec, process->node_tree_vec);
     parser_blank_node = node_create(&(struct node){.type=NODE_TYPE_BLANK});
+    parser_fixup_sys = fix_sys_new();
     vector_set_peek_pointer(process->token_vec, 0);
 
     while (parse_next() == 0)

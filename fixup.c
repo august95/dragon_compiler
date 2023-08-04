@@ -2,44 +2,6 @@
 #include <stdlib.h>
 #include "helpers/vector.h"
 
-struct fixup;
-/*
-* Fixes the fixup
-* Returns true if the fixup was successful.
-*/
-typedef bool(*FIXUP_FIX)(struct fixup* fixup);
-
-/*
-* Signifies the fizup has been removed from memory.
-* the implementor of this function pointer should free any memory related to the fixup.
-*/
-typedef void(*FIXUP_END)(struct fixup* fixup);
-
-struct fixup_config
-{
-    FIXUP_FIX fix;
-    FIXUP_END end;
-    void *private;
-};
-
-struct fixup_system
-{
-    //vector of the fixups
-    struct vector* fixups;
-};
-
-enum
-{
-    FIXUP_FLAG_RESOLVED = 0b00000001
-};
-
-struct fixup
-{
-    int flags;
-    struct fixup_system* system;
-    struct fixup_config config;
-};
-
 struct fixup_system* fix_sys_new()
 {
     struct fixup_system* system = calloc(1, sizeof(struct fixup_system));
