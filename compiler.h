@@ -362,6 +362,13 @@ struct node
             struct node* var;   // single instantiation, null ptr if {body};
         } _struct;
 
+        struct _union
+        {
+            const char* name;
+            struct node* body_n; //the body {}
+            struct node* var;   // single instantiation, null ptr if {body};
+        } _union;
+
         struct body
         {
             struct vector* statements;
@@ -574,6 +581,7 @@ void make_exp_node(struct node *left_node, struct node *right_node, const char *
 void make_bracket_node(struct node* node);
 void make_body_node(struct vector* body_vec, size_t size, bool padded, struct node* largest_var_node);
 void make_struct_node(const char * name, struct node* body_node);
+void make_union_node(const char * name, struct node* body_node);
 void make_function_node(struct datatype* ret_type, const char* name, struct vector* arguemnts, struct node* body_node);
 void make_exp_parentheses_node(struct node* exp_node);
 void make_if_node(struct node* cond_node, struct node* body_node, struct node* next_node);
@@ -599,6 +607,7 @@ bool variable_node_is_primitive(struct node* node);
 struct node* node_from_sym(struct symbol* sym);
 struct node* node_from_symbol(struct compile_process* current_process, const char* name);
 struct node* struct_node_for_name(struct compile_process* current_process, const char* name);
+struct node* union_node_for_name(struct compile_process* current_process, const char* name);
 bool node_is_expression_or_parantheses(struct node* node);
 bool node_is_value_type(struct node* node);
 

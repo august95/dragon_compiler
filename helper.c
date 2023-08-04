@@ -91,9 +91,9 @@ struct node* variable_struct_or_union_body_node(struct node *node)
         return node->var.type.struct_node->_struct.body_n;
     }
 
-    //return the union body.
-    #warning "remember to implement unions"
-    printf("NO UNION NODES ARE YET IMPLEMENTED");
-    exit(1);
-
+   if(node->var.type.type == DATA_TYPE_UNION)
+    {
+        return node->var.type.union_node->_union.body_n;
+    }
+    return NULL;
 }
