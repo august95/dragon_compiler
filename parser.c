@@ -304,6 +304,19 @@ void parser_node_shift_children_left(struct node *node)
     node->exp.op = right_op;
 }
 
+void parser_node_move_right_left_to_left(struct node* node)
+{
+    make_exp_node(node->exp.left, node->exp.right->exp.left, node->exp.op);
+    struct node* completed_node = node_pop();
+
+    //deal with the right node
+    const char* new_op = node->exp.right->exp.op;
+    node->exp.left = completed_node;
+    node->exp.right = node->exp.right->exp.right;
+    node->exp.op = new_op;
+
+}
+
 void parser_reorder_expression(struct node **node_out)
 {
     struct node *node = *node_out;
@@ -330,6 +343,13 @@ void parser_reorder_expression(struct node **node_out)
             parser_reorder_expression(&node->exp.left);
             parser_reorder_expression(&node->exp.right);
         }
+    }
+
+    if((is_array_node(node->exp.left) || is_node_assignment(node->exp.right)) ||
+        ((node_is_expression(node->exp.left, "()")) && 
+        node_is_expression(node->exp.right, ",")))
+    {
+        parser_node_move_right_left_to_left(node);
     }
 }
 void parse_exp_normal(struct history *history)
@@ -1279,7 +1299,13 @@ void parse_body(size_t* variable_size, struct history* history)
     parse_body_multiple_statements(variable_size, body_vec, history);
     parser_scope_finish();
 
-    #warning "Function stack size needs to be adjusted!"
+    if(variable_size)
+    {
+        if(history->flags & HISTORY_FLAG_INSIDE_FUNCTION)
+        {
+            parser_current_function->func.stack_size += *variable_size;
+        }
+    }
 }
 
 void parse_struct_no_new_scope(struct datatype* dtype, bool is_forward_declaration)

@@ -610,12 +610,12 @@ struct node* struct_node_for_name(struct compile_process* current_process, const
 struct node* union_node_for_name(struct compile_process* current_process, const char* name);
 bool node_is_expression_or_parantheses(struct node* node);
 bool node_is_value_type(struct node* node);
-
-
+bool node_is_expression(struct node* node, const char* op);
+bool is_array_node(struct node* node);
+bool is_node_assignment(struct node* node);
 bool keyword_is_datatype(const char *str);
 bool token_is_primitive_keyword(struct token* token);
 bool token_is_operator(struct token* token, const char* val);
-
 bool datatype_is_struct_or_union(struct datatype* dtype);
 bool datatype_is_struct_or_union_for_name(const char* name);
 size_t datatype_size_for_array_access(struct datatype* dtype);
