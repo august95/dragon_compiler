@@ -102,7 +102,11 @@ void symresolver_build_for_struct_node(struct compile_process* process, struct n
 
 void symresolver_build_for_union_node(struct compile_process* process, struct node* node)
 {
-    compiler_error(process, "union not yet supported");
+    if(node->flags & NODE_FLAG_IS_FORWARD_DECLARATION)
+    {
+        return;
+    }
+    symresolver_register_symbol(process, node->_union.name, SYMBOL_TYPE_NODE, node);
 }
 
 void symresolver_build_for_node(struct compile_process* process, struct node* node)
