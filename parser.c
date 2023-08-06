@@ -1889,6 +1889,6 @@ int parse(struct compile_process *process)
     }
 
     assert(fixups_resolve(parser_fixup_sys));
-
+    scope_free_root(process);
     return PARSE_ALL_OK;
 }
