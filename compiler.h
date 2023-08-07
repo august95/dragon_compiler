@@ -302,6 +302,22 @@ struct parsed_switch_case
     int index;
 };
 
+struct codegen_entry_point
+{
+    int id;
+};
+
+struct codegen_exit_point
+{
+    int id;
+};
+
+struct code_generator
+{
+    struct vector* entry_points;
+    struct vector* exit_points;
+};
+
 struct node
 {
     int type;
