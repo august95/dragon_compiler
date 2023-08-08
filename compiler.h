@@ -175,6 +175,25 @@ struct symbol
     void* data;
 };
 
+struct codegen_entry_point
+{
+    //id of the entry point
+    int id;
+};
+
+struct codegen_exit_point
+{
+    //id of the exit point
+    int id;
+};
+
+struct code_generator
+{
+    struct vector* codegen_entry_points;
+    struct vector* codegen_exit_points;
+};
+
+
 struct compile_process
 {
     // how to compile
@@ -209,6 +228,9 @@ struct compile_process
         // struct vctor* multiple symbol tables
         struct vector* tables;
     } symbols;
+
+    struct code_generator* generator;
+    
 };
 enum
 {
@@ -302,21 +324,6 @@ struct parsed_switch_case
     int index;
 };
 
-struct codegen_entry_point
-{
-    int id;
-};
-
-struct codegen_exit_point
-{
-    int id;
-};
-
-struct code_generator
-{
-    struct vector* entry_points;
-    struct vector* exit_points;
-};
 
 struct node
 {
@@ -585,7 +592,7 @@ void *lex_process_tokens(struct lex_process *process);
 int lex(struct lex_process *process);
 int parse(struct compile_process *process);
 int codegen(struct compile_process* process);
-
+struct code_generator* codegenerator_new(struct compile_process* process);
 
 bool token_is_keyword(struct token *token, const char *value);
 bool token_is_identifier(struct token* token);
