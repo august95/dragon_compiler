@@ -187,8 +187,19 @@ struct codegen_exit_point
     int id;
 };
 
-struct code_generator
+struct string_table_element
 {
+    //the string that the lemenet is related to. "hello world"
+    const char* str;
+    //assembly label that points to the memory where the strinc can be found.
+    const char label[50];
+};
+
+struct code_generator
+{   
+    //vector of struct string_table_element;
+    struct vector* string_table;
+
     struct vector* codegen_entry_points;
     struct vector* codegen_exit_points;
 };
@@ -672,7 +683,6 @@ struct node* variable_struct_or_union_body_node(struct node *node);
 struct node* variable_node(struct node*node);
 struct node* variable_node_or_list(struct node* node);
 
-
 int padding(int val ,int to);
 int align_value(int val, int to);
 int align_value_treat_positive(int val, int to);
@@ -703,7 +713,6 @@ size_t function_node_argument_stack_addition(struct node* node);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
-
 
 enum
 {

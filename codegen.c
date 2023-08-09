@@ -42,9 +42,46 @@ void asm_push(const char* ins, ...)
     va_end(args);
 }
 
+const char codegen_get_label_for_string(const char* str)
+{
+    const char * result = NULL;
+    struct code_generator * generator = current_process->generator;
+    vector_set_peek_pointer(generator->string_table, 0);
+    struct  string_table_element* current = vector_peek_ptr(generator->string_table);
+    while(current)
+    {
+       if(S_EQ(current->str, str))
+       {
+        result = current->label;
+        break;
+       } 
+       current = vector_peek_ptr(generator->string_table);
+    }
+    return result;
+}
+
+const char* codegen_register_stirng(const char* str)
+{
+    const char* label =codegen_get_label_for_string(str);
+    if(label)
+    {
+        //we allready have registered the string   
+        return label;
+    }
+
+    struct string_table_element* str_elem = calloc(1, sizeof(struct string_table_element));
+    int label_id = codegen_label_count();
+    snprintf((char*)(str_elem->label), "str_%i", label_id);
+    str_elem->str = str;
+    vector_push(current_process->generator->string_table, &str_elem);
+    return str_elem->label;
+
+}
+
 struct code_generator* codegenerator_new(struct compile_process* process)
 {
     struct code_generator* generator = calloc(1, sizeof(struct code_generator));
+    generator->string_table = vector_create(sizeof(struct string_table_element*));
     generator->codegen_entry_points = vector_create(sizeof(struct codegen_entry_point*));
     generator->codegen_exit_points = vector_create(sizeof(struct codegen_exit_point*));
     return generator;    
@@ -278,7 +315,5 @@ int codegen(struct compile_process* process)
 
     codegen_generate_rod();
 
-    codegen_begin_entry_exit_point();
-    codegen_end_entry_exit_point();
     return 0;
 }
