@@ -2,7 +2,6 @@
 #include "helpers/vector.h"
 #include <assert.h>
 
-#define STACK_PUSH_SIZE 4
 
 void stackframe_pop(struct node* func_node)
 {
@@ -15,6 +14,16 @@ struct stack_frame_element* stackframe_back(struct node* funct_node)
     return vector_back_or_null(funct_node->func.frame.elements);
 }
 
+struct stack_frame_element* stackframe_back_expect(struct node* func_node, int expecting_type, const char* expecting_name)
+{
+    struct stack_frame_element* element = stackframe_back(func_node);
+    if(element && element->type != expecting_type || !S_EQ(element->name, expecting_name))
+    {
+        return NULL;
+    }
+    return element;
+}
+
 void stackframe_pop_expecting(struct node* func_node, int expecting_type, const char* expecting_name)
 {
     struct stack_frame* frame = &func_node->func.frame;
@@ -22,6 +31,19 @@ void stackframe_pop_expecting(struct node* func_node, int expecting_type, const 
     assert(last_element);
     assert(last_element->type == expecting_type && S_EQ(last_element->name, expecting_name));
     stackframe_pop(func_node);
+}
+
+void stackframe_peek_start(struct node* func_node)
+{
+    struct stack_frame* frame = &func_node->func.frame;
+    vector_set_peek_pointer(frame->elements, 0);
+    vector_set_flag(frame->elements, VECTOR_FLAG_PEEK_DECREMENT);
+}
+
+struct stack_frame_elements* stackframe_peek(struct node* func_node)
+{
+    struct stack_frame* frame = &func_node->func.frame;
+    return vector_peek(frame->elements);
 }
 
 void stackframe_push( struct node* func_node, struct stack_frame_element* element)
@@ -50,4 +72,10 @@ void stackframe_add(struct node* func_node, int type, const char* name, size_t a
     {
         stackframe_pop(func_node);
     }
+}
+
+void stackframe_assert_empty(struct node* func_node)
+{
+    struct stack_frame* frame = &func_node->func.frame;
+    assert(vector_count(frame->elements) == 0);
 }

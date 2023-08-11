@@ -195,34 +195,6 @@ struct string_table_element
     const char label[50];
 };
 
-struct stack_frame_data
-{
-    /*
-    * the datatype that was pushed to the stack
-    */
-   struct datatype dtype;
-
-};
-
-struct stack_frame_element
-{
-    //stack frame element flags
-    int flags;
-
-    //type of the frame leement
-    int type;
-
-    /*
-    * the name of the frame lement, not the variable name. i.e result_value
-    */
-    const char * name;
-
-    //offset to the base pointer
-    int offset_from_bp;
-
-    struct stack_frame_data data;
-};
-
 struct code_generator
 {   
     //vector of struct string_table_element;
@@ -361,6 +333,55 @@ struct datatype
 struct parsed_switch_case
 {
     int index;
+};
+
+
+
+struct stack_frame_data
+{
+    /*
+    * the datatype that was pushed to the stack
+    */
+   struct datatype dtype;
+
+};
+
+struct stack_frame_element
+{
+    //stack frame element flags
+    int flags;
+
+    //type of the frame leement
+    int type;
+
+    /*
+    * the name of the frame lement, not the variable name. i.e result_value
+    */
+    const char * name;
+
+    //offset to the base pointer
+    int offset_from_bp;
+
+    struct stack_frame_data data;
+};
+
+#define STACK_PUSH_SIZE 4
+
+enum
+{
+    STACK_FRAME_ELEMENT_TYPE_LOCAL_VARIABLE,
+    STACK_FRAME_ELEMENT_TYPE_SAVED_REGISTER,
+    STACK_FRAME_ELEMENT_TYPE_SAVED_BT,
+    STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE,
+    STACK_FRAME_ELEMENT_TYPE_UNKNOWN
+};
+
+enum
+{
+    STACK_FRAME_ELEMENT_FLAG_IS_ADDRESS = 0b00000001,
+    STACK_FRAME_ELEMENT_FLAG_ELEMENT_NOT_FOUND = 0b00000010,
+    STACK_FRAME_ELEMENT_FLAG_IS_NUMERICAL = 0b00000100, 
+    STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE = 0b00001000
 };
 
 
@@ -744,6 +765,18 @@ void symresolver_new_table(struct compile_process* process);
 void symresolver_end_table(struct compile_process* process);
 struct symbol* symresolver_get_symbol_for_native_function(struct compile_process* process, const char* name);
 size_t function_node_argument_stack_addition(struct node* node);
+
+void stackframe_pop(struct node* func_node);
+struct stack_frame_element* stackframe_back(struct node* funct_node);
+struct stack_frame_element* stackframe_back_expect(struct node* func_node, int expecting_type, const char* expecting_name);
+void stackframe_pop_expecting(struct node* func_node, int expecting_type, const char* expecting_name);
+void stackframe_peek_start(struct node* func_node);
+struct stack_frame_elements* stackframe_peek(struct node* func_node);
+void stackframe_push( struct node* func_node, struct stack_frame_element* element);
+void stackframe_sub(struct node* func_node, int type, const char* name, size_t amount);
+void stackframe_add(struct node* func_node, int type, const char* name, size_t amount);
+void stackframe_assert_empty(struct node* func_node);
+
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_PERATORS_IN_GROUP 12
