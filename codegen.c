@@ -70,7 +70,7 @@ const char* codegen_get_label_for_string(const char* str)
     const char * result = NULL;
     struct code_generator * generator = current_process->generator;
     vector_set_peek_pointer(generator->string_table, 0);
-    struct  string_table_element* current = vector_peek_ptr(generator->string_table);
+    struct string_table_element* current = vector_peek_ptr(generator->string_table);
     while(current)
     {
        if(S_EQ(current->str, str))
@@ -234,15 +234,19 @@ void codegen_generate_global_variable_for_primitive(struct node* node)
         //handle value
         if(node->var.val->type == NODE_TYPE_STRING)
         {
-            #warning "handle size of strings"
+            const char* label = codegen_register_string(node->var.val->sval);
+            asm_push("%s: %s %s", node->var.name, asm_keyword_for_size(variable_size(node), tmp_buf), label);
         }
         else
         {
-            #warning "handle size of numerical value"
+            asm_push("%s: %s %lld", node->var.name, asm_keyword_for_size(variable_size(node), tmp_buf), node->var.val->llnum);
         }
     }
+    else
+    {
+        asm_push("%s: %s 0", node->var.name, asm_keyword_for_size(variable_size(node), tmp_buf));
+    }
 
-    asm_push("%s: %s 0", node->var.name, asm_keyword_for_size(variable_size(node), tmp_buf));
 }
 
 void codegen_generate_global_variable(struct node* node)
@@ -281,7 +285,7 @@ void codegen_generate_data_section_part(struct node* node)
 
 void codgen_generate_data_section()
 {
-    asm_push("seciont .data");
+    asm_push("section .data");
     struct node* node = codegen_node_next();
     while(node)
     {
@@ -352,7 +356,7 @@ void codegen_write_strings()
     struct string_table_element* element = vector_peek_ptr(generator->string_table);
     while(element)
     {
-        codegen_write_strings(element);
+        codegen_write_string(element);
         element = vector_peek_ptr(generator->string_table);
     }
 }
@@ -375,10 +379,7 @@ int codegen(struct compile_process* process)
     codegen_finish_scop();
 
     //generate read only data
-    codegen_register_string("hello world!");
-     codegen_register_string("hello world!");
-      codegen_register_string("hello world!");
-       codegen_register_string("test");
+
 
     codegen_generate_rod();
 
