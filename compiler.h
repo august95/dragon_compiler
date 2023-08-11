@@ -195,6 +195,34 @@ struct string_table_element
     const char label[50];
 };
 
+struct stack_frame_data
+{
+    /*
+    * the datatype that was pushed to the stack
+    */
+   struct datatype dtype;
+
+};
+
+struct stack_frame_element
+{
+    //stack frame element flags
+    int flags;
+
+    //type of the frame leement
+    int type;
+
+    /*
+    * the name of the frame lement, not the variable name. i.e result_value
+    */
+    const char * name;
+
+    //offset to the base pointer
+    int offset_from_bp;
+
+    struct stack_frame_data data;
+};
+
 struct code_generator
 {   
     //vector of struct string_table_element;
@@ -446,6 +474,12 @@ struct node
 
             //stack size for all variables inside the function
             size_t stack_size;
+
+            struct stack_frame
+            {
+                // a vector of stack frame elements
+                struct vector* elements;
+            } frame;
 
         } func;
 
