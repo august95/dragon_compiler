@@ -806,7 +806,7 @@ struct resolver_process
         struct resolver_scope* curret;
     } scope;
 
-    struct compile_process* process;
+    struct compile_process* compiler;
     struct resolver_callbacks callbacks;
 };
 
