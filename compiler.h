@@ -596,7 +596,7 @@ enum
 {
     RESOLVER_ENTITY_FLAG_IS_STACK                   = 0b00000001,
     RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTTY   = 0b00000010,
-    RESOLVER_ENTITY_FLAG_no_MERGE_WITH_LEFT_ENTITY  = 0b00000100,
+    RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY  = 0b00000100,
     RESOLVER_ENTITY_FLAG_DO_INDIRECTION             = 0b00001000,
     RESOLVER_ENTITY_FLAG_JUST_USE_OFFSET            = 0b00010000,
     RESOLVER_ENTITY_FLAG_IS_POINTER_ARRAY_ENTIRY    = 0b00100000,
@@ -718,7 +718,6 @@ struct resolver_entity
         struct resolver_array
         {
             struct datatype dtype;
-            int multiplier;
             struct node* array_index_node;
             int index;
         } array;
@@ -956,6 +955,10 @@ size_t variable_size_for_list(struct node* var_list_node);
 struct node* variable_struct_or_union_body_node(struct node *node);
 struct node* variable_node(struct node*node);
 struct node* variable_node_or_list(struct node* node);
+
+
+int array_multiplier(struct datatype * dtype, int index, int index_value);
+int array_offset(struct datatype* dtype, int index, int index_value);
 
 int padding(int val ,int to);
 int align_value(int val, int to);
