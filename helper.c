@@ -111,9 +111,9 @@ int array_multiplier(struct datatype * dtype, int index, int index_value)
     while(bracket_node)
     {
         assert(bracket_node->bracket.inner->type == NODE_TYPE_NUMBER);
-        int declared_index = bracket_node->bracket.inner->llnum;
+        int declared_index = bracket_node->bracket.inner->llnum; //get size of array at declaration
         int size_value = declared_index;
-        size_sum *= size_value;
+        size_sum *= size_value; //multiply the index in the array, with the size of the size of the following array dimentions
         bracket_node = vector_peek_ptr(dtype->array.brackets->n_brackets);
     }
     return size_sum;
