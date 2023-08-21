@@ -732,7 +732,7 @@ struct resolver_entity
         }func_call_data;
 
 
-        struct resolver_enitity_rule
+        struct resolver_entity_rule
         {
             struct reslover_entity_rule_left
             {
