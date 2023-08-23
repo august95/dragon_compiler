@@ -389,7 +389,7 @@ struct resolver_entity* resolver_make_entity(struct resolver_process* process, s
         break;
     
     default:
-        entity = resolver_create_new_unknown_entity(process, result, custom_dtype, node,scope, offset);
+        entity = resolver_create_new_unknown_entity(result, process, custom_dtype, node,scope, offset);
     }
     if(entity)
     {
@@ -440,7 +440,7 @@ struct resolver_entity*resolver_get_entity_in_scope_with_entity_type(struct reso
         struct resolver_scope* scope = result->last_struct_union_entity->scope;
         struct node* out_node = NULL;
         struct datatype * node_var_datatype = &result->last_struct_union_entity->dtype;
-        int offset = struct_offset(resolver_compiler(resolver), node_var_datatype->type_str, entity_name, &out_node, 0 , 0);
+        //int offset = struct_offset(resolver_compiler(resolver), node_var_datatype->type_str, entity_name, &out_node, 0 , 0);
         
     }
 }
