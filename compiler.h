@@ -918,6 +918,7 @@ void make_cast_node(struct datatype* dtype, struct node* operand_node);
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool node_is_struct_or_union_variable(struct node* node);
+bool node_is_struct_or_union(struct node* node);
 bool variable_node_is_primitive(struct node* node);
 
 struct node* node_from_sym(struct symbol* sym);
