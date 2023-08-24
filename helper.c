@@ -129,6 +129,24 @@ int array_offset(struct datatype* dtype, int index, int index_value)
     return array_multiplier(dtype, index,index_value) * datatype_element_size(dtype);
 }
 
+struct node* body_largest_variable_node(struct node* body_node)
+{
+    if(!body_node)
+    {
+        return NULL;
+    }
+    if(body_node->type != NODE_TYPE_BODY)
+    {
+        return NULL;
+    }
+    return body_node->body.larges_var_node;
+} 
+
+struct node* variable_struct_or_union_largest_variable_node(struct node* var_node)
+{
+    return body_largest_variable_node(variable_struct_or_union_body_node(var_node));
+}
+
 int struct_offset(struct compile_process* compile_process, const char* struct_name, const char* var_name, struct node** var_node_out, int last_pos, int flags)
 {
     struct symbol* struct_sym = symresolver_get_symbol(compile_process, struct_name);
