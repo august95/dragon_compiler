@@ -681,6 +681,7 @@ struct resolver_scope
 {  
     //resolver scope flags
     int flags;
+    //vector of resolver_entity*
     struct vector* entities;
     struct resolver_scope* next;
     struct resolver_scope* prev;
@@ -895,6 +896,14 @@ bool token_is_nl_or_commet_or_newline_seperator(struct token *token);
 
 void node_set_vector(struct vector *vec, struct vector *root_vec);
 void node_push(struct node *node);
+bool is_access_operator(const char* op);
+bool is_access_node(struct node* node);
+bool is_array_operator(const char* op);
+bool is_array_node(struct node* node);
+bool is_parentheses_operator(const char* op);
+bool is_parentheses_node(struct node* node);
+bool is_access_node_with_op(struct node* node, const char* op);
+
 struct node *node_peek_or_null();
 struct node *node_peek();
 struct node *node_pop();
