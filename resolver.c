@@ -5,7 +5,7 @@
 
 bool resolver_result_failed(struct resolver_result* result)
 {
-    return result->flags & RESOLVER_RESULT_FAILED;
+    return result->flags & RESOLVER_RESULT_FLAG_FAILED;
 }
 
 bool resolver_result_ok(struct resolver_result* result)
@@ -515,9 +515,38 @@ struct resolver_entity* resolver_get_function(struct resolver_result* result, st
     return entity;
 }
 
+void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+    
+}
+
+void resolver_excecute_rules(struct resolver_process* resolver, struct resolver_result* result)
+{
+
+}
+
+void resolver_merge_compile_times(struct resolver_process* resolver, struct resolver_result* result)
+{
+
+}
+
+void resolver_finalize_result(struct resolver_process* resolver, struct resolver_result* result)
+{
+
+}
+
 struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node)
 {
     assert(resolver);
     assert(node);
     struct resolver_result* result = resolver_new_result(resolver);
+    resolver_follow_part(resolver, node, result);
+    if(!resolver_result_entity_root(result))
+    {
+        result->flags |= RESOLVER_RESULT_FLAG_FAILED;
+    }
+    resolver_excecute_rules(resolver, result);
+    resolver_merge_compile_times(resolver, result);
+    resolver_finalize_result(resolver, result);
+    return result;
 }
