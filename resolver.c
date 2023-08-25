@@ -4,6 +4,7 @@
 #include <assert.h>
 
 void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
+struct resolver_entity* resolver_follow_expression(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
 bool resolver_result_failed(struct resolver_result* result)
 {
     return result->flags & RESOLVER_RESULT_FLAG_FAILED;
@@ -583,12 +584,48 @@ struct resolver_entity* resolver_follow_struct_expression(struct resolver_proces
     
 }
 
+struct resolver_entity* resolver_follow_array(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+    resolver_follow_part(resolver, node->exp.left, result);
+    struct resolver_entity* left_entity = resolver_result_peek(result);
+    resolver_follow_part(resolver, node->exp.right, result);
+    return left_entity;
+}
+
+struct resolver_entity* resolver_follow_function_call(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+    resolver_follow_part(resolver, node->exp.left, result);
+    struct resolver_result* left_entity = resolver_result_peek(result);
+    struct resolver_entity* funct_call_entity = resolver_create_new_entity_for_function_call(result, resolver);
+    assert(funct_call_entity);
+    funct_call_entity->flag |= RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTTY;
+    #warning "build function call arguements"
+}
+
+
+struct resolver_entity* resolver_folllow_parentheses(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
+{
+    if(node->exp.left->type == NODE_TYPE_IDENTIFIER)
+    {
+        return resolver_follow_function_call(resolver, result, node);
+    }   
+    resolver_follow_expression(resolver, node, result);
+}
+
 struct resolver_entity* resolver_follow_expression(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
     struct resolver_entity* entity = NULL;
     if(is_access_node(node))
     {
         entity =  resolver_follow_struct_expression(resolver, node, result);
+    }
+    else if(is_array_node(node))
+    {
+        entity = resolver_follow_array(resolver, node, result);
+    }
+    else if(is_parentheses_node(node))
+    {
+        entity = resolver_folllow_parentheses(resolver, node, result);
     }
     
 }
