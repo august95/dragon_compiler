@@ -5,6 +5,9 @@
 
 void resolver_follow_part(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
 struct resolver_entity* resolver_follow_expression(struct resolver_process* resolver, struct node* node, struct resolver_result* result);
+struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node);
+
+
 bool resolver_result_failed(struct resolver_result* result)
 {
     return result->flags & RESOLVER_RESULT_FLAG_FAILED;
@@ -591,15 +594,66 @@ struct resolver_entity* resolver_follow_array(struct resolver_process* resolver,
     resolver_follow_part(resolver, node->exp.right, result);
     return left_entity;
 }
+struct datatype* resolver_get_datatype(struct resolver_process* resolver, struct node* node)
+{
+    struct resolver_result* result = resolver_follow(resolver, node->exp.left);
+    if(!resolver_result_ok(result))
+    {
+        return NULL;
+    }
+    return &result->last_entity->dtype;
+}
+
+void resolver_build_function_call_arguments(struct resolver_process* resolver, struct node* argument_node, struct resolver_entity* root_func_call_entity, size_t* total_size_out)
+{
+    if(is_argument_node(argument_node))
+    {
+        //build left node for this function argument
+        resolver_build_function_call_arguments(resolver, argument_node->exp.left, root_func_call_entity, total_size_out);
+
+        //build right node for this argument
+        resolver_build_function_call_arguments(resolver, argument_node->exp.right, root_func_call_entity, total_size_out);
+    }
+
+    else if (argument_node->type == NODE_TYPE_EXPRESSION_PARANTHESES)
+    {
+        resolver_build_function_call_arguments(resolver, argument_node->parenthesis.exp, root_func_call_entity, total_size_out);
+    }
+    else if(node_valid(argument_node))
+    {
+        vector_push(root_func_call_entity->func_call_data.arguments, &argument_node);
+        size_t stack_change = DATA_SIZE_DWORD;
+        struct datatype* dtype = resolver_get_datatype(resolver, argument_node);
+        if(dtype)
+        {
+            //4 bytes uncless its a structure
+            stack_change = datatype_element_size(dtype);
+            if(stack_change < DATA_SIZE_DWORD)
+            {
+                stack_change = DATA_SIZE_DWORD;
+            }
+            stack_change = align_value(stack_change, DATA_SIZE_DWORD);
+        }
+        *total_size_out += stack_change;
+    }
+}
 
 struct resolver_entity* resolver_follow_function_call(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
+    //gets total amount of bytes that is pushed to the stack bfore a function call ( function parameters)
     resolver_follow_part(resolver, node->exp.left, result);
-    struct resolver_result* left_entity = resolver_result_peek(result);
-    struct resolver_entity* funct_call_entity = resolver_create_new_entity_for_function_call(result, resolver);
+    struct resolver_entity* left_entity = resolver_result_peek(result);
+    #warning "FIXME: remmeber to implement function: resolver_create_new_entity_for_function_call()"
+    struct resolver_entity* funct_call_entity = 0 /* resolver_create_new_entity_for_function_call(result, resolver, left_entity, NULL)*/;
     assert(funct_call_entity);
     funct_call_entity->flag |= RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTTY;
-    #warning "build function call arguements"
+
+    resolver_build_function_call_arguments(resolver, node->exp.right, funct_call_entity, &funct_call_entity->func_call_data.stack_size);
+
+    //push the function call entity to the stack
+    resolver_result_entity_push(result, funct_call_entity);
+    return funct_call_entity;
+
 }
 
 
@@ -607,7 +661,7 @@ struct resolver_entity* resolver_folllow_parentheses(struct resolver_process* re
 {
     if(node->exp.left->type == NODE_TYPE_IDENTIFIER)
     {
-        return resolver_follow_function_call(resolver, result, node);
+        return resolver_follow_function_call(resolver, node, result);
     }   
     resolver_follow_expression(resolver, node, result);
 }
@@ -627,6 +681,8 @@ struct resolver_entity* resolver_follow_expression(struct resolver_process* reso
     {
         entity = resolver_folllow_parentheses(resolver, node, result);
     }
+
+    return entity;
     
 }
 
@@ -675,7 +731,7 @@ struct resolver_result* resolver_follow(struct resolver_process* resolver, struc
     assert(resolver);
     assert(node);
     struct resolver_result* result = resolver_new_result(resolver);
-    resolver_follow_part(resolver, node, result);
+    resolver_follow_part(resolver, node, result); //new result, called on a node in the abstarct syntax tree
     if(!resolver_result_entity_root(result))
     {
         result->flags |= RESOLVER_RESULT_FLAG_FAILED;
