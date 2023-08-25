@@ -58,6 +58,9 @@ struct vector* parser_function_arguments(struct history* history);
 void parse_for_tenary(struct history *history);
 void parse_datatype(struct datatype* dtype);
 void parse_for_cast();
+int parser_get_pointer_depth();
+void parser_deal_with_additional_expression();
+void parse_for_parantheses(struct history* history);
 
 static struct compile_process *current_process;
 static struct fixup_system* parser_fixup_sys;
@@ -352,6 +355,44 @@ void parser_reorder_expression(struct node **node_out)
         parser_node_move_right_left_to_left(node);
     }
 }
+
+bool parser_is_unary_operator(const char* op)
+{
+    return is_unary_operator(op);
+}
+
+void parse_for_indirection_unary()
+{
+    int depth = parser_get_pointer_depth();
+    parse_expressionable(history_begin(0));
+    struct node* unary_operand_node = node_pop();
+    make_unary_node("*", unary_operand_node);
+    struct node* unary_node = node_pop();
+    unary_node->unary.indirection.depth = depth;
+    node_push(unary_node);
+}
+
+void parse_for_normal_unary()
+{
+    const char* unary_op = token_next()->sval;
+    parse_expressionable(history_begin(0));
+    struct node* unary_operand_node = node_pop();
+    make_unary_node(unary_op, unary_operand_node);
+}
+
+void parse_for_unary()
+{
+    const char* unary_op = token_peek_next();
+    if(op_is_indirection(unary_op))
+    {
+        parse_for_indirection_unary();
+        return;
+    } 
+
+    parse_for_normal_unary();
+    parser_deal_with_additional_expression();
+}
+
 void parse_exp_normal(struct history *history)
 {
     struct token *op_token = token_peek_next();
@@ -359,6 +400,11 @@ void parse_exp_normal(struct history *history)
     struct node *node_left = node_peek_expressionable_or_null();
     if (!node_left)
     {
+        if(!parser_is_unary_operator(op))
+        {
+            compiler_error(current_process, "the given expresssion has no left operand");
+        }
+        parse_for_unary();
         return;
     }
     // pop off the oprerator token
@@ -366,7 +412,27 @@ void parse_exp_normal(struct history *history)
     // pop off the left node
     node_pop();
     node_left->flags |= NODE_FLAG_INSIDE_EXPRESSION;
-    parse_expressionable_for_op(history_down(history, history->flags), op);
+
+    if(token_peek_next()->type == TOKEN_TYPE_OPERATOR)
+    {
+        if(S_EQ(token_peek_next()->sval, "("))
+        {
+            parse_for_parantheses(history_down(history, history->flags | HISTORY_FLAG_PARANTHESES_IS_NOT_A_FUNCTION));
+        }
+        else if(parser_is_unary_operator(token_peek_next()->sval))
+        {
+            parse_for_unary();
+        }
+        else
+        {
+            compiler_error(current_process, "two operators are expected for a  given expression for operator ");
+        }
+    }
+    else
+    {
+        parse_expressionable_for_op(history_down(history, history->flags), op);
+    }
+
 
     struct node *node_right = node_pop();
     node_right->flags |= NODE_FLAG_INSIDE_EXPRESSION;
@@ -1878,7 +1944,7 @@ int parse_next()
     return 0;
 }
 
-int parse(struct compile_process *process)
+int parse(struct compile_process *process) 
 {
     scope_create_root(process);
     current_process = process;

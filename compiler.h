@@ -384,6 +384,22 @@ enum
     STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE = 0b00001000
 };
 
+struct node;
+struct unary
+{
+    //"*" for pointer access ***
+    const char *op;
+    struct node* operand;
+    union 
+    {
+        struct indirection
+        {
+            int depth;
+        } indirection;
+    };
+    
+};
+
 
 struct node
 {
@@ -579,6 +595,8 @@ struct node
             struct datatype dtype;
             struct node* operand;
         }cast;
+
+        struct unary unary;
     };
 
     union
@@ -906,6 +924,9 @@ bool is_access_node_with_op(struct node* node, const char* op);
 bool is_arguemnt_operator(const char* op);
 bool is_argument_node(struct node* node);
 bool node_valid(struct node* node);
+bool is_unary_operator(const char* op);
+bool op_is_indirection(const char *op);
+
 void datatype_decrement_pointer(struct datatype* dtype);
 size_t array_bracket_count(struct datatype* dtype);
 
@@ -934,6 +955,7 @@ void make_goto_node(struct node* label_node);
 void make_case_node(struct node* exp_node);
 void make_tenary_node(struct node* true_node, struct node* false_node);
 void make_cast_node(struct datatype* dtype, struct node* operand_node);
+void make_unary_node(const char* op,struct node* op_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();

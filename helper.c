@@ -245,6 +245,16 @@ bool node_valid(struct node* node)
     return node && node->type != NODE_TYPE_BLANK;
 }
 
+bool is_unary_operator(const char* op)
+{
+    return S_EQ(op, "-") || S_EQ(op, "!") || S_EQ(op, "~") || S_EQ(op, "*") || S_EQ(op, "&");
+}
+
+bool op_is_indirection(const char *op)
+{
+    S_EQ(op, "*"); 
+}
+
 void datatype_decrement_pointer(struct datatype* dtype)
 {
     dtype->pointer_depth--;

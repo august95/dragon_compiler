@@ -178,6 +178,12 @@ void make_cast_node(struct datatype* dtype, struct node* operand_node)
     node_create(&(struct node){.type=NODE_TYPE_CAST, .cast.dtype=*dtype, .cast.operand=operand_node});
 }
 
+
+void make_unary_node(const char* op,struct node* op_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_UNARY, .unary.op=op, .unary.operand=op_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
     if(sym->type != SYMBOL_TYPE_NODE)
@@ -224,8 +230,6 @@ struct node* union_node_for_name(struct compile_process* current_process, const 
     }
     return node;
 }
-
-
 
 
 struct node* node_create(struct node* _node)
