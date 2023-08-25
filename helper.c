@@ -244,3 +244,17 @@ bool node_valid(struct node* node)
 {  
     return node && node->type != NODE_TYPE_BLANK;
 }
+
+void datatype_decrement_pointer(struct datatype* dtype)
+{
+    dtype->pointer_depth--;
+    if(dtype->pointer_depth <= 0)
+    {
+        dtype->flags &= ~DATATYPE_FLAG_IS_POINTER;
+    }
+}
+
+size_t array_bracket_count(struct datatype* dtype)
+{
+    return vector_count(dtype->array.brackets->n_brackets);
+}
