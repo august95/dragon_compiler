@@ -178,6 +178,12 @@ void make_cast_node(struct datatype* dtype, struct node* operand_node)
     node_create(&(struct node){.type=NODE_TYPE_CAST, .cast.dtype=*dtype, .cast.operand=operand_node});
 }
 
+
+void make_unary_node(const char* op,struct node* op_node)
+{
+    node_create(&(struct node){.type=NODE_TYPE_UNARY, .unary.op=op, .unary.operand=op_node});
+}
+
 struct node* node_from_sym(struct symbol* sym)
 {
     if(sym->type != SYMBOL_TYPE_NODE)
@@ -226,8 +232,6 @@ struct node* union_node_for_name(struct compile_process* current_process, const 
 }
 
 
-
-
 struct node* node_create(struct node* _node)
 {
     struct node* node = malloc(sizeof(struct node));
@@ -236,6 +240,10 @@ struct node* node_create(struct node* _node)
     node->binded.function = parser_current_function;
     node_push(node);
     return node;
+}
+bool node_is_struct_or_union(struct node* node)
+{
+    return node->type == NODE_TYPE_STRUCT || node->type == NODE_TYPE_UNION;
 }
 
 bool node_is_struct_or_union_variable(struct node* node)
@@ -302,11 +310,6 @@ bool node_is_value_type(struct node* node) //value: what can be passed into an v
 bool node_is_expression(struct node* node, const char* op)
 {
     return node->type == NODE_TYPE_EXPRESSION && S_EQ(node->exp.op, op);
-}
-
-bool is_array_node(struct node* node)
-{
-    return node_is_expression(node, "[]");
 }
 
 bool is_node_assignment(struct node* node)

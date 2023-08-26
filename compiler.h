@@ -384,6 +384,22 @@ enum
     STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE = 0b00001000
 };
 
+struct node;
+struct unary
+{
+    //"*" for pointer access ***
+    const char *op;
+    struct node* operand;
+    union 
+    {
+        struct indirection
+        {
+            int depth;
+        } indirection;
+    };
+    
+};
+
 
 struct node
 {
@@ -579,6 +595,8 @@ struct node
             struct datatype dtype;
             struct node* operand;
         }cast;
+
+        struct unary unary;
     };
 
     union
@@ -627,7 +645,7 @@ enum
 
 enum
 {
-    RESOLVER_RESULT_FAILED                                      = 0b00000001,
+    RESOLVER_RESULT_FLAG_FAILED                                 = 0b00000001,
     RESOLVER_RESULT_FLAG_RUNTIME_NEEDED_TO_FINISH_PATH          = 0b00000010,
     RESOLVER_RESULT_FLAG_PROCESSING_ARRAY_ENTITIES              = 0b00000100,
     RESOLVER_RESULT_FLAG_HAS_POINTER_ARRAY_ACCESS               = 0b00001000,
@@ -681,6 +699,7 @@ struct resolver_scope
 {  
     //resolver scope flags
     int flags;
+    //vector of resolver_entity*
     struct vector* entities;
     struct resolver_scope* next;
     struct resolver_scope* prev;
@@ -856,6 +875,12 @@ enum
 
 enum
 {
+    STRUCT_ACCESS_BACKWARDS = 0b00000001,
+    STRUCT_STOP_AT_POINTER_ACCESS = 0b00000010
+};
+
+enum
+{
     FUNCTION_NODE_FLAG_IS_NATIVE = 0b00000001
 };
 
@@ -889,6 +914,22 @@ bool token_is_nl_or_commet_or_newline_seperator(struct token *token);
 
 void node_set_vector(struct vector *vec, struct vector *root_vec);
 void node_push(struct node *node);
+bool is_access_operator(const char* op);
+bool is_access_node(struct node* node);
+bool is_array_operator(const char* op);
+bool is_array_node(struct node* node);
+bool is_parentheses_operator(const char* op);
+bool is_parentheses_node(struct node* node);
+bool is_access_node_with_op(struct node* node, const char* op);
+bool is_arguemnt_operator(const char* op);
+bool is_argument_node(struct node* node);
+bool node_valid(struct node* node);
+bool is_unary_operator(const char* op);
+bool op_is_indirection(const char *op);
+
+void datatype_decrement_pointer(struct datatype* dtype);
+size_t array_bracket_count(struct datatype* dtype);
+
 struct node *node_peek_or_null();
 struct node *node_peek();
 struct node *node_pop();
@@ -914,10 +955,12 @@ void make_goto_node(struct node* label_node);
 void make_case_node(struct node* exp_node);
 void make_tenary_node(struct node* true_node, struct node* false_node);
 void make_cast_node(struct datatype* dtype, struct node* operand_node);
+void make_unary_node(const char* op,struct node* op_node);
 
 bool node_is_expressioable(struct node *node);
 struct node *node_peek_expressionable_or_null();
 bool node_is_struct_or_union_variable(struct node* node);
+bool node_is_struct_or_union(struct node* node);
 bool variable_node_is_primitive(struct node* node);
 
 struct node* node_from_sym(struct symbol* sym);
@@ -959,6 +1002,9 @@ struct node* variable_node_or_list(struct node* node);
 
 int array_multiplier(struct datatype * dtype, int index, int index_value);
 int array_offset(struct datatype* dtype, int index, int index_value);
+struct node* variable_struct_or_union_largest_variable_node(struct node* var_node);
+struct node* body_largest_variable_node(struct node* body_node);
+int struct_offset(struct compile_process* compile_process, const char* struct_name, const char* var_name, struct node** var_node_out, int last_pos, int flags);
 
 int padding(int val ,int to);
 int align_value(int val, int to);
