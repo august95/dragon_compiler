@@ -785,7 +785,7 @@ struct resolver_entity
     struct resolver_result* result;
 
     //the resolver process
-    struct resolver_process* process;
+    struct resolver_process* resolver;
 
     //private data that only the resolver enitity created knows about;
     void* private;    
@@ -926,6 +926,7 @@ bool is_argument_node(struct node* node);
 bool node_valid(struct node* node);
 bool is_unary_operator(const char* op);
 bool op_is_indirection(const char *op);
+bool op_is_address(const char *op);
 
 void datatype_decrement_pointer(struct datatype* dtype);
 size_t array_bracket_count(struct datatype* dtype);
