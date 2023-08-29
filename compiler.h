@@ -983,7 +983,7 @@ size_t datatype_element_size(struct datatype* dtype);
 size_t datatype_size_no_ptr(struct datatype* dtype);
 size_t datatype_size(struct datatype* dtype);
 bool datatype_is_primitive(struct datatype* dtype);
-bool datatype_is_struct_or_union_none_pointer(struct datatype* dtype)
+bool datatype_is_struct_or_union_none_pointer(struct datatype* dtype);
 struct array_brackets* array_brackets_new();
 
 void array_brackets_free(struct array_brackets* brackets);

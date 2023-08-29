@@ -1033,14 +1033,68 @@ void resolver_finalize_result_flags(struct resolver_process* resolver, struct re
                 flags |= RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
             }
         }
-        
-
+        if(entity->type == RESOLVER_ENTITY_TYPE_GENERAL)
+        {
+            flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX | RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+            flags &= ~RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+        }
+        entity = entity->next;
     }
 
+    if(last_entity->dtype.flags & DATATYPE_FLAG_IS_ARRAY && (!does_get_adress && last_entity->type == RESOLVER_ENTITY_TYPE_VARIABLE) && !(last_entity->flag) & RESOLVER_ENTITY_FLAG_USES_ARRAY_BRACKETS )
+    {
+        flags &= ~RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+    }
+    else if( last_entity->type == RESOLVER_ENTITY_TYPE_VARIABLE)
+    {
+        flags |= RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+    }
+    if(does_get_adress)
+    {
+        flags &= ~RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+    }
+
+    result->flags |= flags;
+}
+
+void resolver_finalize_unary(struct resolver_process* resolver, struct resolver_result* result, struct resolver_entity* entity)
+{
+    struct resolver_entity* prev_entity = entity->prev;
+    if(!prev_entity)
+    {
+        return;
+    }
+
+    entity->scope = prev_entity->scope;
+    entity->dtype = prev_entity->dtype;
+    entity->offset = prev_entity->offset;
+    if(entity->type == RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION)
+    {
+        int indirection_depth = entity->indirection.depth;
+        entity->dtype.pointer_depth -= indirection_depth;
+        if(entity->dtype.pointer_depth <= 0)
+        {
+            entity->dtype.flags &= ~DATATYPE_FLAG_IS_POINTER;
+        }
+    }
+    else if ( entity->type = RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS)
+    {
+        entity->dtype.flags |= DATATYPE_FLAG_IS_POINTER;
+        entity->dtype.pointer_depth++;
+    }
+    
 }
 
 void resolver_finalize_last_entity(struct resolver_process* resolver, struct resolver_result* result)
 {
+    struct resolver_entity* last_entity = resolver_result_peek(result);
+    switch(last_entity->type)
+    {
+        case RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION:
+        case RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS:
+            resolver_finalize_unary(resolver, result, last_entity);
+            break;
+    }
 
 }
 
@@ -1054,7 +1108,7 @@ void resolver_finalize_result(struct resolver_process* resolver, struct resolver
         return;
     }
 
-    resolver->callbacks.set_result_base(resolver, result);
+    resolver->callbacks.set_result_base(result, first_entity);
     resolver_finalize_result_flags(resolver, result);
     resolver_finalize_last_entity(resolver, result);
 }
