@@ -975,9 +975,88 @@ void resolver_merge_compile_times(struct resolver_process* resolver, struct reso
     
 }
 
-void resolver_finalize_result(struct resolver_process* resolver, struct resolver_result* result)
+void resolver_finalize_result_flags(struct resolver_process* resolver, struct resolver_result* result)
+{
+    int flags = RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+
+    struct resolver_entity* entity = result->entity;
+    struct resolver_entity* first_entity = entity;
+    struct resolver_entity* last_entity = result->last_entity;
+    bool does_get_adress = false;
+    if(entity == last_entity)
+    {
+        //we only have one entity
+        if(last_entity->type == RESOLVER_ENTITY_TYPE_VARIABLE &&
+        datatype_is_struct_or_union_none_pointer(&last_entity->dtype))
+        {
+            flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX;
+            flags &= RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+        }
+
+        result->flags = flags;
+        return;
+    }
+
+    while(entity)
+    {
+        if(entity->flag & RESOLVER_ENTITY_FLAG_DO_INDIRECTION)
+        {
+            //load the address of the first entity since we have indirection
+            flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX | RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+            flags &= ~RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+        }
+        if(entity->type == RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS)
+        {
+            flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX | RESOLVER_RESULT_FLAG_DOES_GET_ADDRESS;
+            flags &= ~RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE - RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+            does_get_adress = true;
+        }
+        if(entity->flag == RESOLVER_ENTITY_TYPE_FUNCTION_CALL)
+        {
+            flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX;
+            flags &= ~RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+        }
+        if(entity->type == RESOLVER_ENTITY_TYPE_ARRAY_BRACKET)
+        {
+            if(entity->dtype.flags & DATATYPE_FLAG_IS_POINTER)
+            {
+                flags |= RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;
+                flags &= ~RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX; 
+            }
+            else
+            {
+                flags |= RESOLVER_RESULT_FLAG_FIST_ENTITY_LOAD_TO_EBX;
+                flags &= ~RESOLVER_RESULT_FLAG_FIST_ENITITY_PUSH_VALUE;              
+            }
+            if(entity->flag & RESOLVER_ENTITY_FLAG_IS_POINTER_ARRAY_ENTIRY)
+            {
+                flags |= RESOLVER_RESULT_FLAG_FINAL_INDIRECTION_REQUIRED_FOR_VALUE;
+            }
+        }
+        
+
+    }
+
+}
+
+void resolver_finalize_last_entity(struct resolver_process* resolver, struct resolver_result* result)
 {
 
+}
+
+
+void resolver_finalize_result(struct resolver_process* resolver, struct resolver_result* result)
+{
+    struct resolver_entity* first_entity = resolver_result_entity_root(result);
+    if(!first_entity)
+    {
+        //theris nothing on the stack
+        return;
+    }
+
+    resolver->callbacks.set_result_base(resolver, result);
+    resolver_finalize_result_flags(resolver, result);
+    resolver_finalize_last_entity(resolver, result);
 }
 
 struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node)

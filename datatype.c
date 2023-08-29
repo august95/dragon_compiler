@@ -58,3 +58,9 @@ bool datatype_is_primitive(struct datatype* dtype)
 {
     return !datatype_is_struct_or_union(dtype);
 }
+
+
+bool datatype_is_struct_or_union_none_pointer(struct datatype* dtype)
+{
+    return dtype->type != DATA_TYPE_UNKNOWN && !datatype_is_primitive(dtype) && !(dtype->flags & DATATYPE_FLAG_IS_POINTER);
+}
