@@ -1029,8 +1029,12 @@ size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct ar
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
 
-struct resolver_entity* resolver_make_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* custom_dtype, struct node* node, struct resolver_entity* guided_entity, struct resolver_scope* scope );
-struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks );
+struct resolver_entity *resolver_make_entity(struct resolver_process *process, struct resolver_result *result, struct datatype *custom_dtype, struct node *node, struct resolver_entity *guided_entity, struct resolver_scope *scope);
+struct resolver_process *resolver_new_process(struct compile_process *compiler, struct resolver_callbacks *callbacks);
+struct resolver_entity *resolver_new_entity_for_var_node(struct resolver_process *process, struct node *var_node, void *private, int offset);
+struct resolver_entity *resolver_register_function(struct resolver_process *process, struct node *func_node, void *private);
+struct resolver_scope *resolver_new_scope(struct resolver_process *resolver, void *private, int flags);
+void resolver_finish_scope(struct resolver_process *resolver);
 
 //get the variable size for the given node
 size_t variable_size(struct node* var_node);
