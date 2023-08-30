@@ -16,6 +16,9 @@ all: ${OBJECTS}
 ./build/token.o: ./token.c
 	gcc token.c ${INCLUDES} -o ./build/token.o -g -c
 
+./build/rdefault.o: ./rdefault.c
+	gcc rdefault.c ${INCLUDES} -o ./build/rdefault.o -g -c
+
 ./build/lex_process.o: ./lex_process.c
 	gcc lex_process.c ${INCLUDES} -o ./build/lex_process.o -g -c
 

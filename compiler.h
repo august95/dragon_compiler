@@ -612,6 +612,42 @@ struct node
 
 enum
 {
+    RESOLVER_DEFAULT_ENTITY_TYPE_STACK,
+    RESOLVER_DEFAULT_ENTITY_TYPE_SYMBOL
+};
+
+enum
+{
+    RESOLVER_DEFAULT_ENTITY_FLAG_IS_LOCAL_STACK = 0b00000001
+};
+
+enum
+{
+    RESOLVER_DEFAULT_ENTITY_DATA_TYPE_VARIABLE,
+    RESOLVER_DEFAULT_ENTITY_DATA_TYPE_FUNCTION,
+    RESOLVER_DEFAULT_ENTITY_DATA_TYPE_ARRAY_BRACKET
+};
+
+struct resolver_default_entity_data
+{
+    //ie variable function or struct
+    int type;
+    //This s sthe addresss [ebp-4][var_name+4]
+    char address[60];
+    //ebp, var_name
+    char base_address[60];
+    // -4
+    int offset;
+    //flags realting to the entity datat
+    int flags;
+};
+
+struct resolver_default_Scope_data
+{
+    int flags;
+};
+enum
+{
     RESOLVER_ENTITY_FLAG_IS_STACK                   = 0b00000001,
     RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTTY   = 0b00000010,
     RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY  = 0b00000100,
