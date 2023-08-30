@@ -1029,6 +1029,9 @@ size_t array_brackets_calculat_size_from_index(struct datatype* dtype, struct ar
 size_t array_brackets_calculate_size(struct datatype* dtype, struct array_brackets* brackets);
 int array_total_indexes(struct datatype* dtype);
 
+struct resolver_entity* resolver_make_entity(struct resolver_process* process, struct resolver_result* result, struct datatype* custom_dtype, struct node* node, struct resolver_entity* guided_entity, struct resolver_scope* scope );
+struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks );
+
 //get the variable size for the given node
 size_t variable_size(struct node* var_node);
 //sums the variable size from the given variable list node

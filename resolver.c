@@ -195,7 +195,7 @@ void resolver_finish_scope(struct resolver_process* resolver)
     free(scope);
 }
 
-struct resolver_process* resolver_new_resolver_proocess(struct compile_process* compiler, struct resolver_callbacks* callbacks )
+struct resolver_process* resolver_new_process(struct compile_process* compiler, struct resolver_callbacks* callbacks )
 {
     struct resolver_process* process = calloc(1, sizeof(struct resolver_process));
     process->compiler = compiler;

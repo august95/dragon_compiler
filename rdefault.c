@@ -176,11 +176,16 @@ static void resolver_default_merge_array_calculate_out_offset(struct datatype* d
 struct resolver_entity* resolver_default_merge_entities(struct resolver_process* process, struct resolver_result* result, struct resolver_entity* left_entity, struct resolver_entity* right_entity)
 {
     int new_pos = left_entity->offset + right_entity->offset;
-    return resolver_make_entity(process, result, &right_entity->dtype, left_entity->node, &(struct resolver_entity){.type=right_entity->type, .flags=left_entity->flags,.offset=new_pos,.array=right_entity->array}, left_entity->scope);
+    return resolver_make_entity(process, result, &right_entity->dtype, left_entity->node, &(struct resolver_entity){.type=right_entity->type, .flag=left_entity->flag,.offset=new_pos,.array=right_entity->array}, left_entity->scope);
 }
 
 struct resolver_process* resolver_default_new_process(struct compile_process* compiler)
 {
-    return resolver_new_process(compiler, &(struct resolver_callbacks){.new_array_entity=resolver_default_new_array_entity, .delete_entity=resolver_default_delete_entity,.delete_scope=resolver_default_delete_scope,.merge_entities=resolver_default_merge_entities,.make_private=resolver_default_make_private,.set_result_base=resolver_default_set_result_base });
+    return resolver_new_process(compiler, &(struct resolver_callbacks){.new_array_entity=resolver_default_new_array_entity, 
+    .delete_entity=resolver_default_delete_entity,
+    .delete_scope=resolver_default_delete_scope,
+    .merge_entities=resolver_default_merge_entities,
+    .make_private=resolver_default_make_private,
+    .set_result_base=resolver_default_set_result_base });
 
 }
