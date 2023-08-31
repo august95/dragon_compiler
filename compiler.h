@@ -377,7 +377,7 @@ enum
 {
     STACK_FRAME_ELEMENT_TYPE_LOCAL_VARIABLE,
     STACK_FRAME_ELEMENT_TYPE_SAVED_REGISTER,
-    STACK_FRAME_ELEMENT_TYPE_SAVED_BT,
+    STACK_FRAME_ELEMENT_TYPE_SAVED_BP,
     STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE,
     STACK_FRAME_ELEMENT_TYPE_UNKNOWN
 };
@@ -648,7 +648,7 @@ struct resolver_default_entity_data
     int flags;
 };
 
-struct resolver_default_Scope_data
+struct resolver_default_scope_data
 {
     int flags;
 };

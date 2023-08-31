@@ -27,6 +27,44 @@ static struct history *history_down(struct history *history, int flags)
     return new_history;
 }
 
+void asm_push_args(const char* ins, va_list args)
+{
+    va_list args2;
+    va_copy(args2, args);
+    vfprintf(stdout, ins, args);
+    fprintf(stdout, "\n");
+    if(current_process->ofile)
+    {
+        vfprintf(current_process->ofile, ins, args2);
+        fprintf(current_process->ofile, "\n");
+    }
+}
+
+
+void asm_push(const char* ins, ...)
+{
+    va_list args;
+    va_start(args,ins);
+    asm_push_args(ins, args);
+    va_end(args);
+}
+
+void asm_push_no_nl(const char* ins, ...)
+{
+    va_list args;
+    va_start(args,ins);
+    vfprintf(stdout, ins, args);
+    va_end(args);
+    if(current_process->ofile)
+    {
+
+        va_list args;
+        va_start(args,ins);
+        vfprintf(current_process->ofile, ins, args);
+        va_end(args);
+    }
+}
+
 void codegen_new_scope(int flags)
 {
     resolver_default_new_scope(current_process->resolver, flags);
@@ -115,42 +153,6 @@ struct resolver_entity* codegen_new_scope_entity(struct node* var_node, int offs
     return resolver_default_new_scope_entity(current_process->resolver, var_node, offset, flags);
 }
 
-void asm_push_args(const char* ins, va_list args)
-{
-    va_list args2;
-    va_copy(args2, args);
-    vfprintf(stdout, ins, args);
-    fprintf(stdout, "\n");
-    if(current_process->ofile)
-    {
-        vfprintf(current_process->ofile, ins, args2);
-        fprintf(current_process->ofile, "\n");
-    }
-}
-
-void asm_push(const char* ins, ...)
-{
-    va_list args;
-    va_start(args,ins);
-    asm_push_args(ins, args);
-    va_end(args);
-}
-
-void asm_push_no_nl(const char* ins, ...)
-{
-    va_list args;
-    va_start(args,ins);
-    vfprintf(stdout, ins, args);
-    va_end(args);
-    if(current_process->ofile)
-    {
-
-        va_list args;
-        va_start(args,ins);
-        vfprintf(current_process->ofile, ins, args);
-        va_end(args);
-    }
-}
 
 int codegen_label_count()
 {
@@ -427,7 +429,7 @@ void codegen_generate_function_with_body(struct node* node)
     codegen_generate_function_arguments(function_node_argument_vec(node));
 
     codegen_generate_body(node->func.body_n, history_begin(IS_ALONE_STATEMENT));
-    codegen_finish_scope();
+    codegen_finish_scop();
     codegen_stack_add(C_ALIGN(function_node_stack_size(node)));
     asm_pop_ebp();
     stackframe_assert_empty(current_function);
