@@ -1008,6 +1008,7 @@ bool op_is_address(const char *op);
 
 void datatype_decrement_pointer(struct datatype* dtype);
 size_t array_bracket_count(struct datatype* dtype);
+struct datatype datatype_for_numeric();
 
 struct node *node_peek_or_null();
 struct node *node_peek();
