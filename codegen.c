@@ -411,9 +411,47 @@ void codegen_generate_function_arguments(struct vector* argument_vector)
     }
 }
 
+void codegen_generate_scope_variable(struct node* node)
+{
+    struct resolver_entity* entity = codegen_new_scope_entity(node, node->var.aoffset, RESOLVER_DEFAULT_ENTITY_FLAG_IS_LOCAL_STACK);
+    if(node->var.val)
+    {
+        codegen_generate_expressionable(node->var.val, history_begin(EXPRESSION_IS_ASSIGNMENT | IS_RIGHT_OPERAND_OF_ASSIGNMENT));
+    }
+}
+
+void codegen_generate_statements( struct node* node, struct history* history)
+{
+    switch(node->type)
+    {
+        case NODE_TYPE_VARIABLE:
+            codegen_generate_scope_variable(node);
+        break;
+    }
+}
+
+void codegen_generate_scope_no_new_scope(struct vector* statements, struct history* history)
+{
+    vector_set_peek_pointer(statements, 0);
+    struct node* statements_node = vector_peek_ptr(statements);
+    while(statements_node)
+    {
+        codegen_generate_statements(statements_node, history);
+        statements_node = vector_peek_ptr(statements);
+    }
+
+}
+
+void codegen_generate_stack_scope(struct vector* statements, size_t scope_size, struct history* history)
+{
+    codegen_new_scope(RESOLVER_SCOPE_FLAG_IS_STACK);
+    codegen_generate_scope_no_new_scope(statements, history); 
+    codegen_finish_scop();
+}
+
 void codegen_generate_body(struct node* node, struct history* history)
 {
-    #warning "TODO generate the body"
+    codegen_generate_stack_scope(node->body.statements, node->body.size, history);
 }
 void codegen_generate_function_with_body(struct node* node)
 {
