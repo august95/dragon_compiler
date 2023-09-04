@@ -1,4 +1,4 @@
-OBJECTS= ./build/compiler.o ./build/cprocess.o ./build/lexer.o ./build/parser.o ./build/node.o ./build/scope.o ./build/datatype.o ./build/expressionable.o ./build/helper.o ./build/token.o ./build/lex_process.o ./build/symresolver.o ./build/stackframe.o ./build/resolver.o ./build/codegen.o ./build/fixup.o  ./build/array.o ./build/helpers/buffer.o ./build/helpers/vector.o 
+OBJECTS= ./build/compiler.o ./build/cprocess.o ./build/rdefault.o ./build/lexer.o ./build/token.o ./build/lex_process.o ./build/parser.o ./build/scope.o ./build/symresolver.o ./build/codegen.o ./build/stackframe.o ./build/resolver.o ./build/fixup.o ./build/array.o ./build/datatype.o ./build/node.o ./build/expressionable.o ./build/helper.o ./build/helpers/buffer.o ./build/helpers/vector.o 
 INCLUDES= -I./
 
 all: ${OBJECTS}
@@ -9,6 +9,9 @@ all: ${OBJECTS}
 
 ./build/cprocess.o: ./cprocess.c
 	gcc cprocess.c ${INCLUDES} -o ./build/cprocess.o -g -c
+
+./build/rdefault.o: ./rdefault.c
+	gcc rdefault.c ${INCLUDES} -o ./build/rdefault.o -g -c
 
 ./build/lexer.o: ./lexer.c
 	gcc lexer.c ${INCLUDES} -o ./build/lexer.o -g -c
@@ -40,14 +43,13 @@ all: ${OBJECTS}
 ./build/resolver.o: ./resolver.c
 	gcc resolver.c ${INCLUDES} -o ./build/resolver.o -g -c
 
+
+
 ./build/fixup.o: ./fixup.c
-	gcc fixup.c ${INCLUDES} -o ./build/fixup.o -g -c 
+	gcc fixup.c $(INCLUDES) -o ./build/fixup.o -g -c
 
 ./build/array.o: ./array.c
 	gcc array.c ${INCLUDES} -o ./build/array.o -g -c
-
-./build/datatype.o: ./datatype.c
-	gcc datatype.c ${INCLUDES} -o ./build/datatype.o -g -c
 
 ./build/expressionable.o: ./expressionable.c
 	gcc expressionable.c ${INCLUDES} -o ./build/expressionable.o -g -c
@@ -55,12 +57,15 @@ all: ${OBJECTS}
 ./build/helper.o: ./helper.c
 	gcc helper.c ${INCLUDES} -o ./build/helper.o -g -c
 
+./build/datatype.o: ./datatype.c
+	gcc datatype.c ${INCLUDES} -o ./build/datatype.o -g -c
+
 ./build/helpers/buffer.o: ./helpers/buffer.c
 	gcc ./helpers/buffer.c ${INCLUDES} -o ./build/helpers/buffer.o -g -c
 
+
 ./build/helpers/vector.o: ./helpers/vector.c
 	gcc ./helpers/vector.c ${INCLUDES} -o ./build/helpers/vector.o -g -c
-
 
 clean:
 	rm ./main

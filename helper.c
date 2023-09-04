@@ -255,6 +255,12 @@ bool op_is_indirection(const char *op)
     S_EQ(op, "*"); 
 }
 
+
+bool op_is_address(const char *op)
+{
+    S_EQ(op, "&"); 
+}
+
 void datatype_decrement_pointer(struct datatype* dtype)
 {
     dtype->pointer_depth--;
@@ -262,6 +268,16 @@ void datatype_decrement_pointer(struct datatype* dtype)
     {
         dtype->flags &= ~DATATYPE_FLAG_IS_POINTER;
     }
+}
+
+struct datatype datatype_for_numeric()
+{
+    struct datatype dtype = {};
+    dtype.flags |= DATATYPE_FLAG_IS_LITERAL;
+    dtype.type = DATA_TYPE_INTEGER;
+    dtype.type_str = "int";
+    dtype.size = DATA_SIZE_DWORD;
+    return dtype;
 }
 
 size_t array_bracket_count(struct datatype* dtype)
