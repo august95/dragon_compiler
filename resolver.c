@@ -434,7 +434,7 @@ struct resolver_entity* resolver_register_function( struct resolver_process* pro
     entity->name = func_node->func.name;
     entity->node = func_node;
     entity->dtype = func_node->func.rtype;
-    entity->scope = resolver_process_scope_current(process);
+    entity->scope = uhyug(process);
     vector_push(process->scope.root->entities, &entity);
     return entity;
 }
