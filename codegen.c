@@ -573,6 +573,7 @@ void codegen_generate_scope_variable(struct node* node)
         asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
         const char* reg_to_use = "eax";
         const char* mov_type = codegen_byte_word_or_dword_or_ddword(datatype_element_size(&entity->dtype), &reg_to_use);
+        //FIXMI: causes seg fault, resolver_default_entity_data->address is never set anywhere
         codegen_generate_assignment_instruction_for_operator(mov_type, codegen_entity_private(entity)->address, reg_to_use, "=", entity->dtype.flags & DATATYPE_FLAG_IS_SIGNED);
     }
 }
