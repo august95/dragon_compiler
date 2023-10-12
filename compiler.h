@@ -1065,7 +1065,7 @@ void resolver_finish_scope(struct resolver_process *resolver);
 struct resolver_result* resolver_follow(struct resolver_process* resolver, struct node* node);
 bool resolver_result_ok(struct resolver_result* result);
 struct resolver_entity* resolver_result_entity_root(struct resolver_result* result);
-struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity)
+struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity);
 
 bool function_node_is_prototype(struct node *node);
 size_t function_node_stack_size(struct node *node);

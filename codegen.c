@@ -601,6 +601,20 @@ void codegen_generate_entity_access_start(struct resolver_result* result,struct 
         asm_push_ins_push_with_data("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_vaule", 0, &(struct stack_frame_data){.dtype=root_assignment_entity->dtype});
     }
 }
+
+void codegen_genrate_entity_accesss_for_variable_or_general(struct resolver_result* restult, struct resolver_entity* entity)
+{
+    //Resotore the ebx register
+    asm_push_ins_pop("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+    if(entity->flag & RESOLVER_ENTITY_FLAG_DO_INDIRECTION)
+    {
+        asm_push("mov ebx, [ebx]");
+    }
+    asm_push("add ebx, %i", entity->offset);
+    asm_push_ins_push_with_data("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value", 0 , &(struct stack_frame_data){.dtype=entity->dtype});
+
+}
+
 void codegen_generate_entity_access_for_entity_assignemnt_left_operand(struct resolver_result* result,struct resolver_entity* entity, struct history* history)
 {
     switch (entity->type)
@@ -611,7 +625,7 @@ void codegen_generate_entity_access_for_entity_assignemnt_left_operand(struct re
     
     case RESOLVER_ENTITY_TYPE_VARIABLE:
     case RESOLVER_ENTITY_TYPE_GENERAL:
-    #warning "implement variable"
+        codegen_genrate_entity_accesss_for_variable_or_general(result, entity);
         break;
     
     case RESOLVER_ENTITY_TYPE_FUNCTION_CALL:
@@ -636,14 +650,15 @@ void codegen_generate_entity_access_for_entity_assignemnt_left_operand(struct re
         break;
     }
 }
+
 void codegen_generate_entity_access_for_assignment_left_operand(struct resolver_result* result,struct resolver_entity* root_assignment_entity, struct node* top_most_node, struct history* history)
 {
     codegen_generate_entity_access_start(result, root_assignment_entity, history);
     struct resolver_entity* current = resolver_result_entity_next(root_assignment_entity);
     while(current)
     {
-        codegen_generate_entity_access_for_entity_assignemnt_left_operand();
-        current = resolver_result_entity_next();
+        codegen_generate_entity_access_for_entity_assignemnt_left_operand(result, current, history);
+        current = resolver_result_entity_next(current);
     }
     
 }
@@ -652,10 +667,10 @@ void codegen_generate_assignment_part(struct node* node, const char* op, struct 
 {
     struct datatype_right_operand_dtype;
     struct resolver_result* result = resolver_follow(current_process->resolver, node); //x=50; x is passed as node
-    assert(resolveR_result_ok(result));
+    assert(resolver_result_ok(result));
     struct resolver_entity* root_assignment_entity = resolver_result_entity_root(result);
     const char* reg_to_use = "eax";
-    const char* mov_type = codegen_byte_word_or_dword_or_ddword(datatype_element_size(&result->last_entity), &reg_to_use); //a.b.c we care about the dtype of c, thats why we get the last
+    const char* mov_type = codegen_byte_word_or_dword_or_ddword(datatype_element_size(&result->last_entity->dtype), &reg_to_use); //a.b.c we care about the dtype of c, thats why we get the last
     struct resolver_entity* next_entity = resolver_result_entity_next(root_assignment_entity);
     if(!next_entity)
     {
@@ -672,7 +687,10 @@ void codegen_generate_assignment_part(struct node* node, const char* op, struct 
     }
     else
     {
-        codegen_generate_entity_access_for_assignment_left_operand();
+        codegen_generate_entity_access_for_assignment_left_operand(result, root_assignment_entity, node, history);
+        asm_push_ins_pop("edx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+        asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+        codegen_generate_assignment_instruction_for_operator(mov_type, "edx", reg_to_use, op, result->last_entity->flag & DATATYPE_FLAG_IS_SIGNED);
     }
 
 }
@@ -688,7 +706,7 @@ void codegen_generate_exp_node(struct node* node, struct history* history)
 {
     if(is_node_assignment(node))
     {
-
+        codegen_generate_assignment_expression(node, history);
     }
 }
 
