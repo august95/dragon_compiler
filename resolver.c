@@ -338,6 +338,8 @@ struct resolver_entity* resolver_create_new_entity_for_var_node_custom_scope( st
     }
     entity->scope = scope;
     assert(entity->scope);
+    entity->dtype = var_node->var.type;
+    entity->var_data.dtype = var_node->var.type;
     entity->node = var_node;
     entity->name = var_node->var.name;
     entity->offset = offset;
@@ -530,6 +532,7 @@ struct resolver_entity* resolver_follow_for_name(struct resolver_process* resolv
         return NULL;
     }
 
+    //pushes the entity to the result
     resolver_result_entity_push(result, entity);
 
     //the first found identifier
