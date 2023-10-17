@@ -934,7 +934,6 @@ no_merge_possible:
 
 void _resolver_merge_compile_times(struct resolver_process* resolver, struct resolver_result* result)
 {
-{
     struct vector *saved_entities = vector_create(sizeof(struct resolver_entity *));
 
     while (1)
@@ -954,7 +953,7 @@ void _resolver_merge_compile_times(struct resolver_process* resolver, struct res
             break;
         }
 
-        struct resolver_entity *merged_entity = resolver_merge_compile_time_result(resolver, result, left_entity, right_entity);
+        struct resolver_entity *merged_entity = resolver_merge_compile_times_result(resolver, result, left_entity, right_entity);
         if (merged_entity)
         {
             // We have a merged entity push to the resolver result.
