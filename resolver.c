@@ -494,6 +494,7 @@ struct resolver_entity* resolver_get_entity_for_type(struct resolver_result* res
     {
         memset(&entity->last_resolve, 0, sizeof(entity->last_resolve));
     }
+    return entity;
 }
 
 struct resolver_entity* resolver_get_entity(struct resolver_result* result, struct resolver_process* resolver, const char* entity_name)
