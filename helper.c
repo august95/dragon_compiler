@@ -41,8 +41,8 @@ int align_value(int val, int to)
     if( val % to)
     {
         val += padding(val, to);
-        return val;
     }
+    return val;
 }
 
 int align_value_treat_positive(int val, int to)

@@ -2,7 +2,7 @@ OBJECTS= ./build/compiler.o ./build/cprocess.o ./build/rdefault.o ./build/lexer.
 INCLUDES= -I./
 
 all: ${OBJECTS}
-	gcc main.c ${INCLUDES} ${OBJECTS} -g -o ./main 
+	gcc main.c ${INCLUDES} ${OBJECTS} -g -o ./main
 
 ./build/compiler.o: ./compiler.c
 	gcc compiler.c ${INCLUDES} -o ./build/compiler.o -g -c
