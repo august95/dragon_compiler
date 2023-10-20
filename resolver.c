@@ -331,13 +331,15 @@ struct resolver_entity* resolver_create_new_cast_entity( struct resolver_process
 struct resolver_entity* resolver_create_new_entity_for_var_node_custom_scope( struct resolver_process* process, struct node* var_node, void* private, struct resolver_scope* scope, int offset )
 {
     assert(var_node->type == NODE_TYPE_VARIABLE);
-    struct resolver_entity * entity = resolver_create_new_entity(NULL, RESOLVER_ENTITY_TYPE_UNARY_GET_ADDRESS, NULL);
+    struct resolver_entity * entity = resolver_create_new_entity(NULL, RESOLVER_ENTITY_TYPE_VARIABLE, private);
     if(!entity)
     {
         return NULL;
     }
     entity->scope = scope;
     assert(entity->scope);
+    entity->dtype = var_node->var.type;
+    entity->var_data.dtype = var_node->var.type;
     entity->node = var_node;
     entity->name = var_node->var.name;
     entity->offset = offset;
@@ -492,6 +494,7 @@ struct resolver_entity* resolver_get_entity_for_type(struct resolver_result* res
     {
         memset(&entity->last_resolve, 0, sizeof(entity->last_resolve));
     }
+    return entity;
 }
 
 struct resolver_entity* resolver_get_entity(struct resolver_result* result, struct resolver_process* resolver, const char* entity_name)
@@ -530,6 +533,7 @@ struct resolver_entity* resolver_follow_for_name(struct resolver_process* resolv
         return NULL;
     }
 
+    //pushes the entity to the result
     resolver_result_entity_push(result, entity);
 
     //the first found identifier
@@ -934,32 +938,44 @@ no_merge_possible:
 
 void _resolver_merge_compile_times(struct resolver_process* resolver, struct resolver_result* result)
 {
-    struct vector* saved_entities = vector_create(sizeof(struct resolver_entity*));
-    while(1)
+    struct vector *saved_entities = vector_create(sizeof(struct resolver_entity *));
+
+    while (1)
     {
-        struct resolver_entity* right_entity = resolver_result_pop(result);
-        struct resolver_entity* left_entity = resolver_result_pop(result);
-        if(!right_entity)
+        struct resolver_entity *right_entity = resolver_result_pop(result);
+        struct resolver_entity *left_entity = resolver_result_pop(result);
+        if (!right_entity)
         {
+            // Nothing on the stack...
             break;
         }
-        if(!left_entity)
+
+        if (!left_entity)
         {
-            //only one entity
+            // Only one entity? Then theirs nothing to be done push it back and lets go
             resolver_result_entity_push(result, right_entity);
+            break;
         }
 
-        struct resolver_entity* merged_entity = resolver_merge_compile_times_result(resolver, result, left_entity, right_entity);      
-        if(merged_entity)
+        struct resolver_entity *merged_entity = resolver_merge_compile_times_result(resolver, result, left_entity, right_entity);
+        if (merged_entity)
         {
+            // We have a merged entity push to the resolver result.
             resolver_result_entity_push(result, merged_entity);
             continue;
-        }  
+        }
+
+        // Right entity must never merge with the left again.
         right_entity->flag |= RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY;
+
+        // We failed to merge, we must push the right entity to the saved entities stack
         vector_push(saved_entities, &right_entity);
-        //the left entity goes back to the result, because we might mere with the next entity
+
+        // The left entity goes back to the result as we may be able to merge it with next entity
         resolver_result_entity_push(result, left_entity);
     }
+
+    // Now we must push the vector back to the result
     resolver_push_vector_of_entities(result, saved_entities);
     vector_free(saved_entities);
 }
