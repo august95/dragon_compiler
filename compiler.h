@@ -1180,7 +1180,7 @@ struct stack_frame_element *stackframe_back(struct node *funct_node);
 struct stack_frame_element *stackframe_back_expect(struct node *func_node, int expecting_type, const char *expecting_name);
 void stackframe_pop_expecting(struct node *func_node, int expecting_type, const char *expecting_name);
 void stackframe_peek_start(struct node *func_node);
-struct stack_frame_elements *stackframe_peek(struct node *func_node);
+struct stack_frame_element *stackframe_peek(struct node *func_node);
 void stackframe_push(struct node *func_node, struct stack_frame_element *element);
 void stackframe_sub(struct node *func_node, int type, const char *name, size_t amount);
 void stackframe_add(struct node *func_node, int type, const char *name, size_t amount);

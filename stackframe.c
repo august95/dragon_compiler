@@ -5,6 +5,7 @@
 
 void stackframe_pop(struct node* func_node)
 {
+    printf("stackframe pop with func_node %s", func_node->func.name);
     struct stack_frame* frame = &func_node->func.frame;
     vector_pop(frame->elements);
 }
@@ -40,7 +41,7 @@ void stackframe_peek_start(struct node* func_node)
     vector_set_flag(frame->elements, VECTOR_FLAG_PEEK_DECREMENT);
 }
 
-struct stack_frame_elements* stackframe_peek(struct node* func_node)
+struct stack_frame_element* stackframe_peek(struct node* func_node)
 {
     struct stack_frame* frame = &func_node->func.frame;
     return vector_peek(frame->elements);
