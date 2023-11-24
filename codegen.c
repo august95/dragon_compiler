@@ -524,8 +524,12 @@ void codegen_generate_expressionable(struct node* node, struct history* history)
     switch(node->type)
     {
         case NODE_TYPE_NUMBER:
-        codegen_generate_number_node(node, history);
-        break;
+            codegen_generate_number_node(node, history);
+            break;
+
+        case NODE_TYPE_EXPRESSION:
+            codegen_generate_exp_node(node, history);
+            break;
     }
 }
 
