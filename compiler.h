@@ -149,6 +149,12 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+enum 
+{
+    COMPILE_PROCESS_EXECUTE_NASM = 0b00000001,
+    COMPILE_PROCESS_EXPORT_AS_OBJECT = 0b00000010,
+};
+
 // tree structure of scopes that holds scope entiries, and contains the scope offset and alignment data for everything that is allocated on stack
 struct scope
 {
