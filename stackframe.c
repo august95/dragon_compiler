@@ -5,7 +5,6 @@
 
 void stackframe_pop(struct node* func_node)
 {
-    printf("stackframe pop with func_node %s", func_node->func.name);
     struct stack_frame* frame = &func_node->func.frame;
     vector_pop(frame->elements);
 }
