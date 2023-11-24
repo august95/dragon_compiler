@@ -1133,6 +1133,7 @@ void codegen_generate_exp_node(struct node* node, struct history* history)
     if(is_node_assignment(node))
     {
         codegen_generate_assignment_expression(node, history);
+        return;
     }
 
     if (codegen_resolve_node_for_value(node, history))
