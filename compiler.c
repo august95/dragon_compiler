@@ -61,5 +61,6 @@ int compile_file(const char *filename, const char *out_file, int flags)
     }
 
     // perfrom code generation..
+    fclose(process->ofile);
     return COMILER_FILE_COMPILED_OK;
 }

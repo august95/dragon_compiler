@@ -149,6 +149,12 @@ enum
     COMPILER_FAILED_WITH_ERRORS = 1
 };
 
+enum 
+{
+    COMPILE_PROCESS_EXECUTE_NASM = 0b00000001,
+    COMPILE_PROCESS_EXPORT_AS_OBJECT = 0b00000010,
+};
+
 // tree structure of scopes that holds scope entiries, and contains the scope offset and alignment data for everything that is allocated on stack
 struct scope
 {
@@ -205,6 +211,9 @@ struct code_generator
 
     struct vector *codegen_entry_points;
     struct vector *codegen_exit_points;
+
+    // vector of struct response*
+    struct vector *responses;
 };
 
 struct resolver_process;
@@ -935,6 +944,41 @@ enum
     EXPRESSION_IS_MODULUS = 0b10000000000000000000000000000000,
 };
 
+#define EXPRESSION_GEN_MATHABLE (       \
+    EXPRESSION_IS_ADDITION |           \
+    EXPRESSION_IS_SUBTRACTION |        \
+    EXPRESSION_IS_MULTPILICATION |     \
+    EXPRESSION_IS_DIVISION |           \
+    EXPRESSION_IS_MODULUS |            \
+    EXPRESSION_IS_FUNCTION_CALL |      \
+    EXPRESSION_INDIRECTION |           \
+    EXPRESSION_GET_ADDRESS |           \
+    EXPRESSION_IS_ABOVE |              \
+    EXPRESSION_IS_ABOVE_OR_EQUAL |     \
+    EXPRESSION_IS_BELOW |              \
+    EXPRESSION_IS_BELOW_OR_EQUAL |     \
+    EXPRESSION_IS_EQUAL |              \
+    EXPRESSION_IS_NOT_EQUAL |          \
+    EXPRESSION_LOGICAL_AND |           \
+    EXPRESSION_LOGICAL_OR |            \
+    EXPRESSION_IN_LOGICAL_EXPRESSION | \
+    EXPRESSION_BITSHIFT_LEFT |      \
+    EXPRESSION_BITSHIFT_RIGHT |     \
+    EXPRESSION_IS_BITWISE_OR |         \
+    EXPRESSION_IS_BITWISE_AND |        \
+    EXPRESSION_IS_BITWISE_XOR)
+
+
+
+#define EXPRESSION_UNINHERITABLE_FLAGS (            \
+      EXPRESSION_FLAG_RIGH_NODE | EXPRESSION_IN_FUNCTION_CALL_ARGUMENTS | \
+      EXPRESSION_IS_ADDITION | EXPRESSION_IS_MODULUS | EXPRESSION_IS_SUBTRACTION | EXPRESSION_IS_MULTPILICATION | \
+      EXPRESSION_IS_DIVISION | EXPRESSION_IS_ABOVE | EXPRESSION_IS_ABOVE_OR_EQUAL | \
+      EXPRESSION_IS_BELOW | EXPRESSION_IS_BELOW_OR_EQUAL | EXPRESSION_IS_EQUAL |    \
+      EXPRESSION_IS_NOT_EQUAL | EXPRESSION_LOGICAL_AND | \
+      EXPRESSION_IN_LOGICAL_EXPRESSION | EXPRESSION_BITSHIFT_LEFT | EXPRESSION_BITSHIFT_RIGHT | \
+      EXPRESSION_IS_BITWISE_OR | EXPRESSION_IS_BITWISE_AND | EXPRESSION_IS_BITWISE_XOR | EXPRESSION_IS_ASSIGNMENT | IS_ALONE_STATEMENT)
+
 enum
 {
     STRUCT_ACCESS_BACKWARDS = 0b00000001,
@@ -1142,7 +1186,7 @@ struct stack_frame_element *stackframe_back(struct node *funct_node);
 struct stack_frame_element *stackframe_back_expect(struct node *func_node, int expecting_type, const char *expecting_name);
 void stackframe_pop_expecting(struct node *func_node, int expecting_type, const char *expecting_name);
 void stackframe_peek_start(struct node *func_node);
-struct stack_frame_elements *stackframe_peek(struct node *func_node);
+struct stack_frame_element *stackframe_peek(struct node *func_node);
 void stackframe_push(struct node *func_node, struct stack_frame_element *element);
 void stackframe_sub(struct node *func_node, int type, const char *name, size_t amount);
 void stackframe_add(struct node *func_node, int type, const char *name, size_t amount);
