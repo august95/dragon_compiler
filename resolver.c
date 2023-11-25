@@ -644,13 +644,26 @@ void resolver_build_function_call_arguments(struct resolver_process* resolver, s
     }
 }
 
+struct resolver_entity *resolver_create_new_entity_for_function_call(struct resolver_result *result, struct resolver_process *process, struct resolver_entity *left_operand_entity, void *private)
+{
+    struct resolver_entity *entity = resolver_create_new_entity(result, RESOLVER_ENTITY_TYPE_FUNCTION_CALL, private);
+    if (!entity)
+    {
+        return NULL;
+    }
+
+    entity->dtype = left_operand_entity->dtype;
+    entity->func_call_data.arguments = vector_create(sizeof(struct node *));
+    return entity;
+}
+
 struct resolver_entity* resolver_follow_function_call(struct resolver_process* resolver, struct node* node, struct resolver_result* result)
 {
     //gets total amount of bytes that is pushed to the stack bfore a function call ( function parameters)
     resolver_follow_part(resolver, node->exp.left, result);
     struct resolver_entity* left_entity = resolver_result_peek(result);
-    #warning "FIXME: remmeber to implement function: resolver_create_new_entity_for_function_call()"
-    struct resolver_entity* funct_call_entity = 0 /* resolver_create_new_entity_for_function_call(result, resolver, left_entity, NULL)*/;
+
+    struct resolver_entity* funct_call_entity = resolver_create_new_entity_for_function_call(result, resolver, left_entity, NULL);
     assert(funct_call_entity);
     funct_call_entity->flag |= RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_LEFT_ENTITY | RESOLVER_ENTITY_FLAG_NO_MERGE_WITH_NEXT_ENTTY;
 
