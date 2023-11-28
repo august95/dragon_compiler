@@ -1,6 +1,6 @@
 C Compiler
 
-The compiled file is defained in main.c. The compiler will compile test.c by default.
+The compiled file is defined in main.c. The compiler will compile test.c by default.
 
 #installation guide for c compiler:
 
