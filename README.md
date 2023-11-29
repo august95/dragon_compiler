@@ -9,9 +9,15 @@ sudo apt install make
 sudo apt install gcc-multilib g++-multilib
 sudo apt install nasm
 
-#for debugging
+#debugging compiler source code during compilation
 sudo apt install gdb 
 
 #make commands
 make 
 make clean
+
+#debugging binary produced by compiler
+
+gdb ./test
+break main
+layout asm
