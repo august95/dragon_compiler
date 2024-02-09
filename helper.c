@@ -221,6 +221,11 @@ int struct_offset(struct compile_process* compile_process, const char* struct_na
     return position;
 }
 
+bool is_logical_operator(const char* op)
+{
+    return S_EQ(op, "&&") || S_EQ(op, "||");
+}
+
 bool is_access_operator(const char* op)
 {
     return S_EQ(op, "->") || S_EQ(op, ".");
@@ -285,6 +290,11 @@ bool op_is_indirection(const char *op)
 bool op_is_address(const char *op)
 {
     S_EQ(op, "&"); 
+}
+
+bool is_logical_node(struct node* node)
+{
+    return node->type == NODE_TYPE_EXPRESSION && is_logical_operator(node->exp.op);
 }
 
 void datatype_decrement_pointer(struct datatype* dtype)

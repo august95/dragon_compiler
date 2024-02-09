@@ -976,7 +976,7 @@ enum
       EXPRESSION_IS_DIVISION | EXPRESSION_IS_ABOVE | EXPRESSION_IS_ABOVE_OR_EQUAL | \
       EXPRESSION_IS_BELOW | EXPRESSION_IS_BELOW_OR_EQUAL | EXPRESSION_IS_EQUAL |    \
       EXPRESSION_IS_NOT_EQUAL | EXPRESSION_LOGICAL_AND | \
-      EXPRESSION_IN_LOGICAL_EXPRESSION | EXPRESSION_BITSHIFT_LEFT | EXPRESSION_BITSHIFT_RIGHT | \
+      EXPRESSION_BITSHIFT_LEFT | EXPRESSION_BITSHIFT_RIGHT | \
       EXPRESSION_IS_BITWISE_OR | EXPRESSION_IS_BITWISE_AND | EXPRESSION_IS_BITWISE_XOR | EXPRESSION_IS_ASSIGNMENT | IS_ALONE_STATEMENT)
 
 enum
@@ -1020,6 +1020,7 @@ bool token_is_nl_or_commet_or_newline_seperator(struct token *token);
 
 void node_set_vector(struct vector *vec, struct vector *root_vec);
 void node_push(struct node *node);
+bool is_logical_operator(const char* op);
 bool is_access_operator(const char *op);
 bool is_access_node(struct node *node);
 bool is_array_operator(const char *op);
@@ -1033,6 +1034,7 @@ bool node_valid(struct node *node);
 bool is_unary_operator(const char *op);
 bool op_is_indirection(const char *op);
 bool op_is_address(const char *op);
+bool is_logical_node(struct node* node);
 
 void datatype_decrement_pointer(struct datatype *dtype);
 size_t array_bracket_count(struct datatype *dtype);
