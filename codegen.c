@@ -1235,8 +1235,8 @@ void codegen_generate_exp_node_for_logical_arithmetic(struct node* node, struct 
         codegen_generate_end_labels_for_logical_expressions(node->exp.op, history->exp.logical_end_label, history->exp.logical_en_label_positive );
         asm_push_ins_push("eax",  STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
     }
-
-
+    //bug fix me: needs to pop of value to eax, or stack gets corrupt
+    asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
 }
 
 void codegen_generate_exp_node_for_arithmetic(struct node* node, struct history* history)
