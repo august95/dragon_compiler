@@ -1165,8 +1165,8 @@ void codegen_gen_math_for_value(const char* reg, const char* value, int flags, b
 void codegen_setup_new_logical_expression(struct node* node, struct history* history)
 {
     int lable_index = codegen_label_count();
-    snprintf(history->exp.logical_end_label, ".endc_ %i", lable_index);
-    snprintf(history->exp.logical_en_label_positive, ".endc_%i_positive", lable_index);
+    snprintf(history->exp.logical_end_label, 20, ".endc_ %i", lable_index);
+    snprintf(history->exp.logical_en_label_positive, 20,  ".endc_%i_positive", lable_index);
     history->exp.logical_start_op = node->exp.op;
     history->flags |= EXPRESSION_IN_LOGICAL_EXPRESSION;
 }
