@@ -976,7 +976,7 @@ enum
       EXPRESSION_IS_DIVISION | EXPRESSION_IS_ABOVE | EXPRESSION_IS_ABOVE_OR_EQUAL | \
       EXPRESSION_IS_BELOW | EXPRESSION_IS_BELOW_OR_EQUAL | EXPRESSION_IS_EQUAL |    \
       EXPRESSION_IS_NOT_EQUAL | EXPRESSION_LOGICAL_AND | \
-      EXPRESSION_IN_LOGICAL_EXPRESSION | EXPRESSION_BITSHIFT_LEFT | EXPRESSION_BITSHIFT_RIGHT | \
+      EXPRESSION_BITSHIFT_LEFT | EXPRESSION_BITSHIFT_RIGHT | \
       EXPRESSION_IS_BITWISE_OR | EXPRESSION_IS_BITWISE_AND | EXPRESSION_IS_BITWISE_XOR | EXPRESSION_IS_ASSIGNMENT | IS_ALONE_STATEMENT)
 
 enum
@@ -1020,6 +1020,7 @@ bool token_is_nl_or_commet_or_newline_seperator(struct token *token);
 
 void node_set_vector(struct vector *vec, struct vector *root_vec);
 void node_push(struct node *node);
+bool is_logical_operator(const char* op);
 bool is_access_operator(const char *op);
 bool is_access_node(struct node *node);
 bool is_array_operator(const char *op);
@@ -1033,6 +1034,7 @@ bool node_valid(struct node *node);
 bool is_unary_operator(const char *op);
 bool op_is_indirection(const char *op);
 bool op_is_address(const char *op);
+bool is_logical_node(struct node* node);
 
 void datatype_decrement_pointer(struct datatype *dtype);
 size_t array_bracket_count(struct datatype *dtype);
@@ -1092,6 +1094,8 @@ size_t datatype_size(struct datatype *dtype);
 bool datatype_is_primitive(struct datatype *dtype);
 bool datatype_is_struct_or_union_none_pointer(struct datatype *dtype);
 struct array_brackets *array_brackets_new();
+struct datatype* datatype_thats_a_pointer(struct datatype* d1, struct datatype* d2);
+struct datatype* datatype_pointer_reduce(struct datatype* dtype, int by);
 
 void array_brackets_free(struct array_brackets *brackets);
 void array_brackets_add(struct array_brackets *bracekts, struct node *bracket_node);
@@ -1110,6 +1114,7 @@ struct resolver_result* resolver_follow(struct resolver_process* resolver, struc
 bool resolver_result_ok(struct resolver_result* result);
 struct resolver_entity* resolver_result_entity_root(struct resolver_result* result);
 struct resolver_entity* resolver_result_entity_next(struct resolver_entity* entity);
+struct resolver_entity* resolver_result_entity(struct resolver_result* result);
 
 bool function_node_is_prototype(struct node *node);
 size_t function_node_stack_size(struct node *node);
