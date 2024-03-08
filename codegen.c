@@ -112,6 +112,7 @@ static struct history *history_down(struct history *history, int flags)
 
 void codegen_generate_exp_node(struct node *node, struct history *history);
 const char* codegen_sub_register(const char* original_register, size_t size);
+void codegen_generate_entity_access_for_function_call(struct resolver_result *result, struct resolver_entity *entity);
 
 void codegen_new_scope(int flags)
 {
@@ -577,7 +578,7 @@ void codegen_generate_identifier(struct node* node, struct history* history)
 
     struct resolver_entity* entity = resolver_result_entity(result);
     codegen_generate_variable_access(node, entity, history);
-    codegen_response_acknowledged(&(struct response){.flags=RESPONSE_FLAG_RESOLVED_ENTITY,.data.resolved_entity=entity});
+    codegen_response_acknowledge(&(struct response){.flags=RESPONSE_FLAG_RESOLVED_ENTITY,.data.resolved_entity=entity});
 }
 
 void codegen_generate_expressionable(struct node* node, struct history* history)
@@ -778,7 +779,7 @@ void codegen_generate_entity_access_for_entity_assignemnt_left_operand(struct re
         break;
     
     case RESOLVER_ENTITY_TYPE_FUNCTION_CALL:
-        #warning "implement function call"
+        codegen_generate_entity_access_for_function_call(result,entity);
         break;
 
     case RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION:
@@ -847,8 +848,45 @@ void codegen_generate_assignment_part(struct node* node, const char* op, struct 
 void codegen_generate_assignment_expression(struct node* node, struct history* history)
 {
     codegen_generate_expressionable(node->exp.right, history_down(history, EXPRESSION_IS_ASSIGNMENT | IS_RIGHT_OPERAND_OF_ASSIGNMENT ));
-    codegen_generate_assignment_part(node->exp.left, node->exp.op, history);
-    
+    codegen_generate_assignment_part(node->exp.left, node->exp.op, history);    
+}
+
+void codegen_generate_entity_access_for_function_call(struct resolver_result *result, struct resolver_entity *entity)
+{
+    vector_set_flag(entity->func_call_data.arguments, VECTOR_FLAG_PEEK_DECREMENT);
+    vector_set_peek_pointer_end(entity->func_call_data.arguments);
+
+    struct node* node = vector_peek_ptr(entity->func_call_data.arguments);
+    asm_push_ins_pop("ebx", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+    asm_push("mov ecx, ebx");
+    if(datatype_is_struct_or_union_none_pointer(&entity->dtype))
+    {
+        #warning "implement struct and uniont pointers"
+    }
+
+    while(node)
+    {
+        codegen_generate_expressionable(node, history_begin(EXPRESSION_IN_FUNCTION_CALL_ARGUMENTS));
+        node = vector_peek_ptr(entity->func_call_data.arguments);
+    }
+    asm_push("call ecx");
+    size_t stack_size = entity->func_call_data.stack_size;
+    if(datatype_is_struct_or_union_none_pointer(&entity->dtype))
+    {
+        stack_size += DATA_SIZE_DWORD;
+    }
+    codegen_stack_add(stack_size);
+    if(datatype_is_struct_or_union_none_pointer(&entity->dtype))
+    {
+        #warning "generate structure push"
+    }
+    else
+    {
+        asm_push_ins_push_with_data("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value", 0, &(struct stack_frame_data){.dtype=entity->dtype});
+    }
+
+    #warning "implement structures"
+
 }
 
 void codegen_generate_entity_access_for_entity(struct resolver_result *result, struct resolver_entity *entity, struct history *history)
@@ -865,7 +903,7 @@ void codegen_generate_entity_access_for_entity(struct resolver_result *result, s
         break;
 
     case RESOLVER_ENTITY_TYPE_FUNCTION_CALL:
-#warning "too function call"
+        codegen_generate_entity_access_for_function_call(result, entity);
         break;
 
     case RESOLVER_ENTITY_TYPE_UNARY_INDIRECTION:
@@ -897,6 +935,8 @@ void codegen_generate_entity_access(struct resolver_result *result, struct resol
         codegen_generate_entity_access_for_entity(result, current, history);
         current = resolver_result_entity_next(current);
     }
+    struct resolver_entity* last_entity = result->last_entity;
+    codegen_response_acknowledge(&(struct response){.flags=RESPONSE_FLAG_RESOLVED_ENTITY, .data.resolved_entity=last_entity});
 }
 bool codegen_resolve_node_return_result(struct node *node, struct history *history, struct resolver_result **result_out)
 {
@@ -1236,7 +1276,7 @@ void codegen_generate_exp_node_for_logical_arithmetic(struct node* node, struct 
         asm_push_ins_push("eax",  STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
     }
     //bug fix me: needs to pop of value to eax, or stack gets corrupt
-    asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
+    //asm_push_ins_pop("eax", STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE, "result_value");
 }
 
 void codegen_generate_exp_node_for_arithmetic(struct node* node, struct history* history)
