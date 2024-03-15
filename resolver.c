@@ -602,7 +602,7 @@ struct resolver_entity* resolver_follow_array(struct resolver_process* resolver,
 }
 struct datatype* resolver_get_datatype(struct resolver_process* resolver, struct node* node)
 {
-    struct resolver_result* result = resolver_follow(resolver, node->exp.left);
+    struct resolver_result* result = resolver_follow(resolver, node);
     if(!resolver_result_ok(result))
     {
         return NULL;
