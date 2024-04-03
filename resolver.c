@@ -98,6 +98,7 @@ void resolver_result_entity_push(struct resolver_result* result, struct resolver
     result->last_entity->next = entity;
     entity->prev = result->last_entity;
     result->last_entity = entity;
+    result->count++;
 }
 
 struct resolver_entity* resolver_result_peek(struct resolver_result* result)
