@@ -1351,6 +1351,25 @@ void codegen_generate_exp_node(struct node* node, struct history* history)
     codegen_generate_exp_node_for_arithmetic(node, history_down(history, codegen_remove_uninheritable_flags(history->flags) | additional_flags));
 }
 
+void codegen_discard_unused_stack()
+{
+    asm_stack_peek_start();
+    
+    struct stack_frame_element* element = asm_stack_peek();
+    size_t stack_adjustment = 0;
+    while(element)
+    {
+        if(!S_EQ(element->name, "result_value"));
+        {
+            break;
+        }
+        stack_adjustment += DATA_SIZE_DWORD;
+        element = asm_stack_peek();
+    }
+
+    codegen_stack_add(stack_adjustment);
+}
+
 void codegen_generate_statement(struct node* node, struct history* history)
 {
     switch(node->type)
@@ -1363,6 +1382,7 @@ void codegen_generate_statement(struct node* node, struct history* history)
             codegen_generate_scope_variable(node);
         break;
     }
+    codegen_discard_unused_stack();
 }
 void codegen_generate_scope_no_new_scope(struct vector* statements, struct history* history)
 {
