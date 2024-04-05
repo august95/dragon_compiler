@@ -1354,15 +1354,16 @@ void codegen_generate_exp_node(struct node* node, struct history* history)
 void codegen_discard_unused_stack()
 {
     asm_stack_peek_start();
-    
+
     struct stack_frame_element* element = asm_stack_peek();
     size_t stack_adjustment = 0;
     while(element)
     {
-        if(!S_EQ(element->name, "result_value"));
+        if(!S_EQ(element->name, "result_value"))
         {
             break;
         }
+
         stack_adjustment += DATA_SIZE_DWORD;
         element = asm_stack_peek();
     }
