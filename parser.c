@@ -382,7 +382,7 @@ void parse_for_normal_unary()
 
 void parse_for_unary()
 {
-    const char* unary_op = token_peek_next();
+    const char* unary_op = token_peek_next()->sval;
     if(op_is_indirection(unary_op))
     {
         parse_for_indirection_unary();
