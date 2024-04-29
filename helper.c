@@ -283,13 +283,13 @@ bool is_unary_operator(const char* op)
 
 bool op_is_indirection(const char *op)
 {
-    S_EQ(op, "*"); 
+    return S_EQ(op, "*"); 
 }
 
 
 bool op_is_address(const char *op)
 {
-    S_EQ(op, "&"); 
+    return S_EQ(op, "&"); 
 }
 
 bool is_logical_node(struct node* node)

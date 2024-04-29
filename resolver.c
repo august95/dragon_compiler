@@ -98,6 +98,7 @@ void resolver_result_entity_push(struct resolver_result* result, struct resolver
     result->last_entity->next = entity;
     entity->prev = result->last_entity;
     result->last_entity = entity;
+    result->count++;
 }
 
 struct resolver_entity* resolver_result_peek(struct resolver_result* result)
@@ -602,7 +603,7 @@ struct resolver_entity* resolver_follow_array(struct resolver_process* resolver,
 }
 struct datatype* resolver_get_datatype(struct resolver_process* resolver, struct node* node)
 {
-    struct resolver_result* result = resolver_follow(resolver, node->exp.left);
+    struct resolver_result* result = resolver_follow(resolver, node);
     if(!resolver_result_ok(result))
     {
         return NULL;
